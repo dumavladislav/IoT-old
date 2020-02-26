@@ -27,12 +27,9 @@
 
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include "Credentials.h"
 
 // Update these with values suitable for your network.
-
-const char* ssid = "KhvorikNet-24";
-const char* password = "IwantSomeStrongPassword";
-const char* mqtt_server = "dumskyhome";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -48,9 +45,9 @@ void setup_wifi() {
   // We start by connecting to a WiFi network
   Serial.println();
   Serial.print("Connecting to ");
-  Serial.println(ssid);
+  Serial.println(WIFI_SSID);
 
-  WiFi.begin(ssid, password);
+  WiFi.begin(WIFI_SSID, WIFI_PSSWD);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -93,7 +90,7 @@ void reconnect() {
     String clientId = "ESP8266Client-";
     clientId += String(random(0xffff), HEX);
     // Attempt to connect
-    if (client.connect(clientId.c_str())) {
+    if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PSSWD)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
       client.publish("outTopic", "hello world");
@@ -111,9 +108,9 @@ void reconnect() {
 
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
-  Serial.begin(115200);
+  Serial.begin(9600);
   setup_wifi();
-  client.setServer(mqtt_server, 1883);
+  client.setServer(MQTT_SERVER, 1883);
   client.setCallback(callback);
 }
 
