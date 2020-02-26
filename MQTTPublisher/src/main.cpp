@@ -47,6 +47,10 @@ int someSortOfShit = 0;
 
 void setup_wifi() {
 
+  msg[1] = 'a';
+  msg[2] = 'b';
+  msg[3] = 'c';
+
   delay(10);
   // We start by connecting to a WiFi network
   Serial.println();
