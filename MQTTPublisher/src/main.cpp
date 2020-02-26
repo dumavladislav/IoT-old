@@ -31,16 +31,17 @@
 // Update these with values suitable for your network.
 
 const char* ssid = "KhvorikNet-24";
-const char* password = "IncorrectPassword";
+const char* password = "assword";
 const char* mqtt_server = "dumskyhome";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 long lastMsg = 0;
-char msg[100];
+char msg[70];
 int value = 0;
 
 char* TEST = "";
+int someSortOfShit = 0;
 
 void setup_wifi() {
 
