@@ -39,6 +39,17 @@ long lastMsg = 0;
 char msg[50];
 int value = 0;
 
+int currentButton = 0;
+int lastButton = 0;
+boolean ledOn = false;
+
+// PINS DECLARATION
+
+const int BUTTON_PIN = D1;
+
+
+////////////
+
 void setup_wifi() {
 
   delay(10);
@@ -60,6 +71,8 @@ void setup_wifi() {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+
+  pinMode(BUTTON_PIN, INPUT);
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -106,6 +119,19 @@ void reconnect() {
   }
 }
 
+boolean readButton() {
+
+  int current = digitalRead(BUTTON_PIN);
+
+  if(current != lastButton) {
+    delay(5);
+    current = digitalRead(BUTTON_PIN);
+    return current;
+  }
+  return current;
+}
+
+
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   Serial.begin(9600);
@@ -130,4 +156,15 @@ void loop() {
     Serial.println(msg);
     client.publish("outTopic", msg);
   }
+
+  currentButton = readButton();
+  if(lastButton == LOW && currentButton == HIGH) {
+    
+    Serial.print("Button pressed");
+    ledOn = !ledOn;
+    snprintf (msg, 50, "#%d", ledOn);
+    client.publish("buttonTopic", msg);
+  }
+  lastButton = currentButton;
 }
+
