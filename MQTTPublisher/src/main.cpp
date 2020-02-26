@@ -39,27 +39,16 @@ PubSubClient client(espClient);
 long lastMsg = 0;
 
 
-char msg[110];
-int value = 10;
-
-char* TEST = "";
-int someSortOfShit = 0;
+char msg[50];
+int value = 0;
 
 void setup_wifi() {
-
-  msg[1] = 'a';
-  msg[2] = 'b';
-  msg[3] = 'c';
 
   delay(10);
   // We start by connecting to a WiFi network
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
-
-  msg[1] = 'q';
-  msg[2] = 'w';
-  msg[3] = 'e';
 
   WiFi.begin(ssid, password);
 
