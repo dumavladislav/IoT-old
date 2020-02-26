@@ -53,6 +53,10 @@ void setup_wifi() {
   Serial.print("Connecting to ");
   Serial.println(ssid);
 
+  msg[1] = 'q';
+  msg[2] = 'w';
+  msg[3] = 'e';
+
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
