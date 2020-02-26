@@ -37,8 +37,10 @@ const char* mqtt_server = "dumskyhome";
 WiFiClient espClient;
 PubSubClient client(espClient);
 long lastMsg = 0;
-char msg[50];
+char msg[100];
 int value = 0;
+
+char* TEST = "";
 
 void setup_wifi() {
 
