@@ -30,9 +30,9 @@
 
 // Update these with values suitable for your network.
 
-const char* ssid = "........";
-const char* password = "........";
-const char* mqtt_server = "broker.mqtt-dashboard.com";
+const char* ssid = "KhvorikNet-24";
+const char* password = "IncorrectPassword";
+const char* mqtt_server = "dumskyhome";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
