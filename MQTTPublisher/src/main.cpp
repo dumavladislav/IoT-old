@@ -38,8 +38,8 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 long lastMsg = 0;
 
-char msg[70];
-int value = 0;
+char msg[110];
+int value = 10;
 
 char* TEST = "";
 int someSortOfShit = 0;
