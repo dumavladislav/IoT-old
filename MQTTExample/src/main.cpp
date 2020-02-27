@@ -27,10 +27,7 @@
 
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#include "GyverButton.h"
-
 #include "Credentials.h"
-#include "Constants.h"
 
 // Update these with values suitable for your network.
 
@@ -40,14 +37,18 @@ long lastMsg = 0;
 
 
 char msg[50];
+int value = 0;
 
-boolean ledState = 0;
+int currentButton = 0;
+int lastButton = 0;
+boolean ledOn = false;
 
 // PINS DECLARATION
-const int BUTTON_PIN = D1;
-////////////
 
-GButton butt1(BUTTON_PIN);
+const int BUTTON_PIN = D1;
+
+
+////////////
 
 void setup_wifi() {
 
@@ -70,13 +71,15 @@ void setup_wifi() {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+
+  pinMode(BUTTON_PIN, INPUT);
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
-/*  for (int i = 0; i < length; i++) {
+  for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
   }
   Serial.println();
@@ -88,21 +91,24 @@ void callback(char* topic, byte* payload, unsigned int length) {
     // it is active low on the ESP-01)
   } else {
     digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
-  }*/
+  }
 
 }
 
-void reconnect(String clientId) {
+void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
+    // Create a random client ID
+    String clientId = "ESP8266Client-";
+    clientId += String(random(0xffff), HEX);
     // Attempt to connect
     if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PSSWD)) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish(GREETING_TPC, "sdfsdf");
+      client.publish("outTopic", "hello world");
       // ... and resubscribe
-      client.subscribe(LIGHT_STATE_TPC);
+      client.subscribe("inTopic");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -113,7 +119,7 @@ void reconnect(String clientId) {
   }
 }
 
-/*boolean readButton() {
+boolean readButton() {
 
   int current = digitalRead(BUTTON_PIN);
 
@@ -123,7 +129,7 @@ void reconnect(String clientId) {
     return current;
   }
   return current;
-}*/
+}
 
 
 void setup() {
@@ -132,23 +138,16 @@ void setup() {
   setup_wifi();
   client.setServer(MQTT_SERVER, 1883);
   client.setCallback(callback);
-
-
-  butt1.setDebounce(50);
-  butt1.setTimeout(300);
-//  butt1.setIncrStep(2);
-//  butt1.setIncrTimeout(500);
-
 }
 
 void loop() {
 
   if (!client.connected()) {
-    reconnect("ButtonOwner-" + String(random(0xffff), HEX));
+    reconnect();
   }
   client.loop();
 
-/*  long now = millis();
+  long now = millis();
   if (now - lastMsg > 2000) {
     lastMsg = now;
     ++value;
@@ -156,9 +155,9 @@ void loop() {
     Serial.print("Publish message: ");
     Serial.println(msg);
     client.publish("outTopic", msg);
-  }*/
+  }
 
-/*  currentButton = readButton();
+  currentButton = readButton();
   if(lastButton == LOW && currentButton == HIGH) {
     
     Serial.print("Button pressed");
@@ -166,14 +165,6 @@ void loop() {
     snprintf (msg, 50, "#%d", ledOn);
     client.publish("buttonTopic", msg);
   }
-  lastButton = currentButton;*/
-
-  if (butt1.isPress()) {
-    Serial.print("Button pressed");
-    ledState = !ledState;
-    snprintf (msg, 50, "#%d", ledState);
-    client.publish((char* ) LIGHT_TOGGLE_TPC, msg);
-  }        
-
+  lastButton = currentButton;
 }
 
