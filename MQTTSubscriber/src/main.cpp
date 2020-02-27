@@ -1,34 +1,13 @@
 #include <Arduino.h>
+#include <vector>
 
-/*
- Basic ESP8266 MQTT example
-
- This sketch demonstrates the capabilities of the pubsub library in combination
- with the ESP8266 board/library.
-
- It connects to an MQTT server then:
-  - publishes "hello world" to the topic "outTopic" every two seconds
-  - subscribes to the topic "inTopic", printing out any messages
-    it receives. NB - it assumes the received payloads are strings not binary
-  - If the first character of the topic "inTopic" is an 1, switch ON the ESP Led,
-    else switch it off
-
- It will reconnect to the server if the connection is lost using a blocking
- reconnect function. See the 'mqtt_reconnect_nonblocking' example for how to
- achieve the same result without blocking the main loop.
-
- To install the ESP8266 board, (using Arduino 1.6.4+):
-  - Add the following 3rd party board manager under "File -> Preferences -> Additional Boards Manager URLs":
-       http://arduino.esp8266.com/stable/package_esp8266com_index.json
-  - Open the "Tools -> Board -> Board Manager" and click install for the ESP8266"
-  - Select your ESP8266 in "Tools -> Board"
-
-*/
-
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>  
+ 
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#include <map>
-#include "GyverButton.h"
 
 #include "Credentials.h"
 #include "Constants.h"
@@ -41,23 +20,53 @@ long lastMsg = 0;
 
 char msg[50];
 
+boolean ledState = 0;
 char ledColors[3];
 
-boolean ledState = 0;
-
-
 // PINS DECLARATION
-const int BUTTON_PIN = D1;
 const int LED_PIN_R = D2;
 const int LED_PIN_G = D3;
 const int LED_PIN_B = D4;
 ////////////
 
-GButton butt1(BUTTON_PIN);
+using namespace std;
+vector<string> split(string str, char delimiter) {
+  vector<string> internal;
+  stringstream ss(str); // Turn the string into a stream.
+  string tok;
+ 
+  while(getline(ss, tok, delimiter)) {
+    internal.push_back(tok);
+  }
+ 
+  return internal;
+}
 
-void sendLedState() {
-  snprintf (msg, 50, "%d;%d;%d", ledColors[0], ledColors[1], ledColors[2]);
-  client.publish((char* ) LIGHT_TOGGLE_TPC, msg);
+char* getLedState(byte* payload) {
+  //snprintf (msg, 50, "%d;%d;%d", ledColors[0], ledColors[1], ledColors[2]);
+  //client.publish((char* ) LIGHT_TOGGLE_TPC, msg);
+
+  vector<string> sep = split((char* )payload, ';');
+
+  ledColors[0] = atoi(sep[0].c_str());
+  ledColors[1] = atoi(sep[1].c_str());
+  ledColors[2] = atoi(sep[2].c_str());
+
+  /*if ((char)payload[0] == '1') {
+
+      digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
+      // but actually the LED is on; this is because
+      // it is active low on the ESP-01)
+    } else {
+      digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
+    }*/
+}
+
+
+void changeColors(char ledColors[3]) {
+  digitalWrite(LED_PIN_R , ledColors[0]);
+  digitalWrite(LED_PIN_G , ledColors[1]);
+  digitalWrite(LED_PIN_B , ledColors[2]);
 }
 
 void setup_wifi() {
@@ -87,26 +96,16 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
-
-  if(topic == LIGHT_STATE_TPC){
-    sendLedState();
-  }
-
-
-/*  for (int i = 0; i < length; i++) {
+  for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
   }
   Serial.println();
 
-  // Switch on the LED if an 1 was received as first character
-  if ((char)payload[0] == '1') {
-    digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
-    // but actually the LED is on; this is because
-    // it is active low on the ESP-01)
-  } else {
-    digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
-  }*/
+  if(topic == LIGHT_TOGGLE_TPC) {
+    // Switch on the LED if an 1 was received as first character
 
+    changeColors(getLedState(payload));
+  }
 }
 
 void reconnect(String clientId) {
@@ -119,7 +118,7 @@ void reconnect(String clientId) {
       // Once connected, publish an announcement...
       client.publish(GREETING_TPC, (clientId + " connected").c_str());
       // ... and resubscribe
-      client.subscribe(LIGHT_STATE_TPC);
+      client.subscribe(LIGHT_TOGGLE_TPC);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -147,32 +146,12 @@ void setup() {
   pinMode(LED_PIN_R, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   pinMode(LED_PIN_G, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   pinMode(LED_PIN_B, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
-  
+
   Serial.begin(9600);
   setup_wifi();
   client.setServer(MQTT_SERVER, 1883);
   client.setCallback(callback);
 
-
-  butt1.setDebounce(50);
-  butt1.setTimeout(300);
-//  butt1.setIncrStep(2);
-//  butt1.setIncrTimeout(500);
-
-  ledColors[0] = 255;
-  ledColors[1] = 255;
-  ledColors[2] = 255;
-
-}
-
-void changeColors() {
-  ledColors[0] = std::rand() > 0.5 ? HIGH : LOW;
-  ledColors[1] = std::rand() > 0.5 ? HIGH : LOW;
-  ledColors[2] = std::rand() > 0.5 ? HIGH : LOW;
-
-  digitalWrite(LED_PIN_R , ledColors[0]);
-  digitalWrite(LED_PIN_G , ledColors[1]);
-  digitalWrite(LED_PIN_B , ledColors[2]);
 }
 
 void loop() {
@@ -201,13 +180,6 @@ void loop() {
     client.publish("buttonTopic", msg);
   }
   lastButton = currentButton;*/
-
-  if (butt1.isPress()) {
-    Serial.print("Button pressed");
-    ledState = !ledState;
-    changeColors();
-    sendLedState();
-  }        
 
 }
 
