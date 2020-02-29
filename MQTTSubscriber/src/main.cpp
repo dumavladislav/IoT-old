@@ -42,15 +42,20 @@ vector<string> split(string str, char delimiter) {
   return internal;
 }
 
-char* getLedState(byte* payload) {
+void getLedState(byte* payload) {
   //snprintf (msg, 50, "%d;%d;%d", ledColors[0], ledColors[1], ledColors[2]);
   //client.publish((char* ) LIGHT_TOGGLE_TPC, msg);
 
   vector<string> sep = split((char* )payload, ';');
 
+  int ledC[3];
+
   ledColors[0] = atoi(sep[0].c_str());
   ledColors[1] = atoi(sep[1].c_str());
   ledColors[2] = atoi(sep[2].c_str());
+
+  snprintf (msg, 50, "%d|%d|%d", ledColors[0], ledColors[1], ledColors[2]);
+  Serial.println(msg);
 
   /*if ((char)payload[0] == '1') {
 
@@ -60,13 +65,22 @@ char* getLedState(byte* payload) {
     } else {
       digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
     }*/
+
+    //return ledColors;
 }
 
 
-void changeColors(char ledColors[3]) {
-  digitalWrite(LED_PIN_R , ledColors[0]);
-  digitalWrite(LED_PIN_G , ledColors[1]);
-  digitalWrite(LED_PIN_B , ledColors[2]);
+void changeColors() {
+  snprintf (msg, 50, "In changeColors(): %d|%d|%d", ledColors[0], ledColors[1], ledColors[2]);
+  Serial.println(msg);
+
+  if ((int)ledColors[0] == 1) Serial.println("RED: HIGH"); 
+
+  digitalWrite(LED_PIN_R , ((int)ledColors[0]) == 1 ? HIGH : LOW);
+  digitalWrite(LED_PIN_G , ((int)ledColors[1]) == 1 ? HIGH : LOW);
+  digitalWrite(LED_PIN_B , ((int)ledColors[2]) == 1 ? HIGH : LOW);
+
+  //digitalWrite(LED_PIN_R, HIGH);
 }
 
 void setup_wifi() {
@@ -101,11 +115,15 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
-  if(topic == LIGHT_TOGGLE_TPC) {
+  Serial.println(topic);
+
+  //if(!string::compare(*topic, LIGHT_TOGGLE_TPC)) {
+    Serial.println("topic match");
     // Switch on the LED if an 1 was received as first character
 
-    changeColors(getLedState(payload));
-  }
+    getLedState(payload);
+    changeColors();
+  //}
 }
 
 void reconnect(String clientId) {
@@ -117,6 +135,8 @@ void reconnect(String clientId) {
       Serial.println("connected");
       // Once connected, publish an announcement...
       client.publish(GREETING_TPC, (clientId + " connected").c_str());
+      // Request current state
+      client.publish(LIGHT_STATE_TPC, "?");
       // ... and resubscribe
       client.subscribe(LIGHT_TOGGLE_TPC);
     } else {
@@ -152,12 +172,13 @@ void setup() {
   client.setServer(MQTT_SERVER, 1883);
   client.setCallback(callback);
 
+  digitalWrite(LED_PIN_R, HIGH);
 }
 
 void loop() {
 
   if (!client.connected()) {
-    reconnect("ButtonOwner-" + String(random(0xffff), HEX));
+    reconnect("LightSlave-" + String(random(0xffff), HEX));
   }
   client.loop();
 

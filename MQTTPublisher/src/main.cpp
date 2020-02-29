@@ -166,9 +166,12 @@ void setup() {
 }
 
 void changeColors() {
-  ledColors[0] = std::rand() > 0.5 ? HIGH : LOW;
-  ledColors[1] = std::rand() > 0.5 ? HIGH : LOW;
-  ledColors[2] = std::rand() > 0.5 ? HIGH : LOW;
+  std::srand(time(0));
+  ledColors[0] = (float)(std::rand()%2) > 0.5 ? HIGH : LOW;
+  ledColors[1] = (float)(std::rand()%2) > 0.5 ? HIGH : LOW;
+  ledColors[2] = (float)(std::rand()%2) > 0.5 ? HIGH : LOW;
+
+  snprintf (msg, 50, "%d;%d;%d", ledColors[0], ledColors[1], ledColors[2]);
 
   digitalWrite(LED_PIN_R , ledColors[0]);
   digitalWrite(LED_PIN_G , ledColors[1]);
@@ -181,6 +184,8 @@ void loop() {
     reconnect("ButtonOwner-" + String(random(0xffff), HEX));
   }
   client.loop();
+
+  butt1.tick();
 
 /*  long now = millis();
   if (now - lastMsg > 2000) {
@@ -203,7 +208,7 @@ void loop() {
   lastButton = currentButton;*/
 
   if (butt1.isPress()) {
-    Serial.print("Button pressed");
+    Serial.println("Button pressed");
     ledState = !ledState;
     changeColors();
     sendLedState();
