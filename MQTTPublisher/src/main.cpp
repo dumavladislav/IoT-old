@@ -28,6 +28,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <map>
+#include <iostream>
 #include "GyverButton.h"
 
 #include "Credentials.h"
@@ -88,9 +89,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print(topic);
   Serial.print("] ");
 
-  if(topic == LIGHT_STATE_TPC){
+  //if(std::string::compare(topic, LIGHT_STATE_TPC)){
+    
     sendLedState();
-  }
+  //}
 
 
 /*  for (int i = 0; i < length; i++) {

@@ -172,7 +172,7 @@ void setup() {
   client.setServer(MQTT_SERVER, 1883);
   client.setCallback(callback);
 
-  digitalWrite(LED_PIN_R, HIGH);
+  //digitalWrite(LED_PIN_R, HIGH);
 }
 
 void loop() {
