@@ -22,23 +22,26 @@ boolean MSState = 0;
 
 
 // PINS DECLARATION
+const int RELAY_PIN = D1;
 const int MS_PIN = D2;
+
 ////////////
 
-void sendMessage(char* message) {
+void sendMessage(char message[]) {
   // current date/time based on current system
   time_t now = time(0);
    
   // convert now to string form
   char* dt = ctime(&now);
 
-  snprintf (msg, 50, "%s - %s: %s", dt, MOTION_SENSOR_ID, message);
+  snprintf (msg, 50, "%s%s: %s", dt, MOTION_SENSOR_ID, message);
   client.publish((char* ) MOTION_SENSOR_STATE, msg);
 }
 
 void sendMSState(boolean currState) {
-  snprintf (msg, 50, "%d", currState);
-  sendMessage(msg);
+  char message[50];
+  snprintf (message, 50, "%d", currState);
+  sendMessage(message);
 }
 
 void setup_wifi() {
@@ -127,11 +130,14 @@ void reconnect(String clientId) {
 
 void setup() {
   pinMode(MS_PIN, INPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(RELAY_PIN, OUTPUT);
+  
+  digitalWrite(RELAY_PIN, HIGH);
   
   Serial.begin(9600);
   setup_wifi();
   client.setServer(MQTT_SERVER, 1883);
-  client.setCallback(callback);
+  client.setCallback(callback);  
 }
 
 void loop() {
@@ -141,11 +147,15 @@ void loop() {
   }
   client.loop();
 
+  delay(10);
   MSState = digitalRead(MS_PIN);
+//  Serial.print(MSState);
+
 
   if (MSState != MSPreviousState) {
     Serial.println("State changed!");
-    sendMSState(MSState);
+    digitalWrite(RELAY_PIN, !MSState);
+    sendMSState(!MSState);
     MSPreviousState = MSState;
   }        
 
