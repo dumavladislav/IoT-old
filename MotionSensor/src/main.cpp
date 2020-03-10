@@ -19,11 +19,13 @@ char msg[50];
 
 boolean MSPreviousState = 0;
 boolean MSState = 0;
+int MSValue = 0;
 
 
 // PINS DECLARATION
 const int RELAY_PIN = D1;
-const int MS_PIN = D2;
+const int MS_PIN = A0;
+//const int RELAY_SCAN = D3;
 
 ////////////
 
@@ -72,26 +74,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print(topic);
   Serial.print("] ");
 
-  //if(std::string::compare(topic, LIGHT_STATE_TPC)){
-    
-  //  sendLedState();
-  //}
-
-
-/*  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
-
-  // Switch on the LED if an 1 was received as first character
-  if ((char)payload[0] == '1') {
-    digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
-    // but actually the LED is on; this is because
-    // it is active low on the ESP-01)
-  } else {
-    digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
-  }*/
-
 }
 
 void reconnect(String clientId) {
@@ -115,11 +97,10 @@ void reconnect(String clientId) {
   }
 }
 
-
-
 void setup() {
   pinMode(MS_PIN, INPUT);     // Initialize the BUILTIN_LED pin as an output
   pinMode(RELAY_PIN, OUTPUT);
+//  pinMode(RELAY_SCAN, INPUT);
   
   digitalWrite(RELAY_PIN, HIGH);
   
@@ -137,16 +118,25 @@ void loop() {
   client.loop();
 
   delay(10);
-  MSState = digitalRead(MS_PIN);
-//  Serial.print(MSState);
+  MSValue = analogRead(MS_PIN);
+
+  Serial.print("MSValue = ");
+  Serial.println(MSValue);
+
+  if (MSValue >= 333) MSState = HIGH;
+  else MSState = LOW;
+
+//  boolean RelayState = digitalRead(RELAY_SCAN);
+//  Serial.println("MSState = " + MSState);
 
 
   if (MSState != MSPreviousState) {
+    MSPreviousState = MSState;
     Serial.println("State changed!");
     digitalWrite(RELAY_PIN, !MSState);
     sendMSState(MSState);
-    MSPreviousState = MSState;
-  }        
+    
+  }
 
 }
 
