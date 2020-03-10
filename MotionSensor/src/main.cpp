@@ -115,17 +115,6 @@ void reconnect(String clientId) {
   }
 }
 
-/*boolean readButton() {
-
-  int current = digitalRead(BUTTON_PIN);
-
-  if(current != lastButton) {
-    delay(5);
-    current = digitalRead(BUTTON_PIN);
-    return current;
-  }
-  return current;
-}*/
 
 
 void setup() {
@@ -155,7 +144,7 @@ void loop() {
   if (MSState != MSPreviousState) {
     Serial.println("State changed!");
     digitalWrite(RELAY_PIN, !MSState);
-    sendMSState(!MSState);
+    sendMSState(MSState);
     MSPreviousState = MSState;
   }        
 
