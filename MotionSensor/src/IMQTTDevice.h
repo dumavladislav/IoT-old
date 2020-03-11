@@ -1,7 +1,0 @@
-class IMQTTDevice{
-    public:
-
-    private:
-
-
-}

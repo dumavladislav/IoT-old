@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
-
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
 #include <map>
 #include <iostream>
 #include <ctime>
@@ -15,12 +16,8 @@
 
 // Update these with values suitable for your network.
 
-/***************
 WiFiClient espClient;
 PubSubClient client(espClient);
-****************/
-
-
 long lastMsg = 0;
 
 char msg[50];
