@@ -1,8 +1,7 @@
 #include <Arduino.h>
+#include "MQTTLightControl.h"
 
-#include <ESP8266WiFi.h>
-#include <PubSubClient.h>
-#include <map>
+
 #include <iostream>
 #include <ctime>
 #include <iostream>
@@ -15,28 +14,15 @@
 #include "Constants.h"
 
 // Update these with values suitable for your network.
-
-WiFiClient espClient;
-PubSubClient client(espClient);
-long lastMsg = 0;
-
 char msg[50];
 
-float startTimeOnOperationMode = 0;
+MQTTLightControl mqttLightControl((char*) MOTION_SENSOR_ID, (char*) MQTT_PORT, 1883/*, callback*/);
 
-////////////////// DEVICE STATE SETTINGS ///////////////////
-enum operationModes { MSDRIVEN, ON, OFF };
-
-int operationMode = operationModes::MSDRIVEN;
-boolean MSPreviousState = 0;
-boolean MSState = 0;
 int MSValue = 0;
-////////////////// DEVICE STATE SETTINGS ///////////////////
 
 // PINS DECLARATION
 const int RELAY_PIN = D1;
 const int MS_PIN = A0;
-//const int RELAY_SCAN = D3;
 
 ////////////
 
@@ -53,6 +39,7 @@ vector<string> split(string str, char delimiter) {
   return internal;
 }
 
+/*
 void sendMessage(char* topicName, char message[]) {
   // current date/time based on current system
   time_t now = time(0);
@@ -74,8 +61,9 @@ void sendOperationMode(int mode) {
   char message[50];
   snprintf (message, 50, "%d", mode);
   sendMessage(DEVICE_OPERATION_MODE_TPC, message);
-}
+}*/
 
+/*
 void setup_wifi() {
 
   delay(10);
@@ -97,11 +85,9 @@ void setup_wifi() {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
-}
+}*/
 
-operationModes getOperationMode(int intVar) {
-  operationModes enumVar = static_cast<operationModes>(intVar);
-}
+/*
 
 void setOperationMode(int mode) {
   Serial.print("DEVICE ");
@@ -110,7 +96,8 @@ void setOperationMode(int mode) {
   Serial.println(mode);
   operationMode = getOperationMode(mode);
   sendOperationMode(operationMode);
-}
+}*/
+
 
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
@@ -129,16 +116,15 @@ void callback(char* topic, byte* payload, unsigned int length) {
      
       vector<string> sep = split(messageTemp.c_str(), ':');
       if (sep[0].c_str() == MOTION_SENSOR_ID) {
-        setOperationMode(atoi(sep[1].c_str()));
-  //      if(messageTemp == "on"){
-
-  //      }
+        mqttLightControl.setOperationMode(atoi(sep[1].c_str()));
       }
   }
   Serial.println();
-
 }
 
+
+
+/*
 void reconnect(String clientId) {
   // Loop until we're reconnected
   while (!client.connected()) {
@@ -159,20 +145,24 @@ void reconnect(String clientId) {
     }
   }
 }
+*/
 
 void setup() {
   pinMode(MS_PIN, INPUT);     // Initialize the BUILTIN_LED pin as an output
   pinMode(RELAY_PIN, OUTPUT);
-//  pinMode(RELAY_SCAN, INPUT);
   
-  digitalWrite(RELAY_PIN, HIGH);
-  
+  //digitalWrite(RELAY_PIN, HIGH);
   Serial.begin(9600);
-  setup_wifi();
+
+  //mqttLightControl = MQTTLightControl((char*) MOTION_SENSOR_ID, (char*) MQTT_PORT, 1883, callback);
+
+/*  setup_wifi();
   client.setServer(MQTT_SERVER, 1883);
-  client.setCallback(callback);  
+  client.setCallback(callback);  */
 }
 
+
+/*
 void msDrivenOperation() {
     MSValue = analogRead(MS_PIN);
 
@@ -215,30 +205,21 @@ void onOperation() {
     if((currTime - startTimeOnOperationMode) >= MAX_ON_OPERATION_MODE_DURATION_MS) offOperation();
   }
   
-}
+}*/
 
 
 void loop() {
 
-  if (!client.connected()) {
-    reconnect(MOTION_SENSOR_ID + String(random(0xffff), HEX));
-  }
-  client.loop();
+  // if (!client.connected()) {
+  //   reconnect(MOTION_SENSOR_ID + String(random(0xffff), HEX));
+  // }
+  // client.loop();
 
+  mqttLightControl.setCallback(callback);
+
+  mqttLightControl.keepAlive(MQTT_USER, MQTT_PSSWD);
   delay(10);
-  switch (operationMode)
-  {
-  case operationModes::MSDRIVEN:
-    msDrivenOperation();
-    break;
-  case operationModes::ON:
-    onOperation();
-    break;
-  case operationModes::OFF:
-    offOperation();
-    break;
-  default:
-    break;
-  }
+  mqttLightControl.updateState(analogRead(MS_PIN));
+  digitalWrite(RELAY_PIN, !(mqttLightControl.getState()));
 }
 
