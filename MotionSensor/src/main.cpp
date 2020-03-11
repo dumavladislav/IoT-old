@@ -16,7 +16,7 @@
 // Update these with values suitable for your network.
 char msg[50];
 
-MQTTLightControl mqttLightControl((char*) MOTION_SENSOR_ID, (char*) MQTT_PORT, 1883/*, callback*/);
+MQTTLightControl mqttLightControl((char*) MOTION_SENSOR_ID, (char*) MQTT_SERVER, 1883/*, callback*/);
 
 int MSValue = 0;
 
@@ -220,6 +220,9 @@ void loop() {
   mqttLightControl.keepAlive(MQTT_USER, MQTT_PSSWD);
   delay(10);
   mqttLightControl.updateState(analogRead(MS_PIN));
-  digitalWrite(RELAY_PIN, !(mqttLightControl.getState()));
+  Serial.print("Analog sygnal: ");
+  Serial.println(analogRead(MS_PIN));
+  if(RELAY_HIGH) digitalWrite(RELAY_PIN, mqttLightControl.getState());
+  else digitalWrite(RELAY_PIN, !(mqttLightControl.getState()));
 }
 
