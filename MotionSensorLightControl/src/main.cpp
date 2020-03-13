@@ -8,33 +8,25 @@
 ///////////////////////// CUSTOM INCLUDES //////////////////////////////////
 #include "MQTTLightControl.h"
 
-
 #include <iostream>
 #include <ctime>
 #include <iostream>
 #include <vector>
 #include <string>
-#include <sstream>  
-
+#include <sstream>
 
 #include "Credentials.h"
 #include "Constants.h"
 
 ///////////////////////// CUSTOM INCLUDES //////////////////////////////////
 
-#ifndef STASSID
-#define STASSID "your-ssid"
-#define STAPSK "your-password"
-#endif
-
-const char *ssid = STASSID;
-const char *password = STAPSK;
-
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PSSWD;
 
 ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
 char msg[50];
-MQTTLightControl mqttLightControl((char*) MOTION_SENSOR_ID, (char*) MQTT_SERVER, 1883/*, callback*/);
+MQTTLightControl mqttLightControl((char *)MOTION_SENSOR_ID, (char *)MQTT_SERVER, 1883 /*, callback*/);
 int MSValue = 0;
 
 // PINS DECLARATION
@@ -43,44 +35,48 @@ const int MS_PIN = A0;
 ////////////
 
 using namespace std;
-vector<string> split(string str, char delimiter) {
+vector<string> split(string str, char delimiter)
+{
   vector<string> internal;
   stringstream ss(str); // Turn the string into a stream.
   string tok;
- 
-  while(getline(ss, tok, delimiter)) {
+
+  while (getline(ss, tok, delimiter))
+  {
     internal.push_back(tok);
   }
- 
+
   return internal;
 }
 
-
-void callback(char* topic, byte* payload, unsigned int length) {
+void callback(char *topic, byte *payload, unsigned int length)
+{
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
 
   String messageTemp;
-   
-  for (int i = 0; i < length; i++) {
+
+  for (int i = 0; i < length; i++)
+  {
     Serial.print((char)payload[i]);
     messageTemp += (char)payload[i];
   }
   Serial.println();
- 
-  if(topic==DEVICE_OPERATION_CONTROL_TPC){
-     
-      vector<string> sep = split(messageTemp.c_str(), ':');
-      if (sep[0].c_str() == MOTION_SENSOR_ID) {
-        mqttLightControl.setOperationMode(atoi(sep[1].c_str()));
-      }
+
+  if (topic == DEVICE_OPERATION_CONTROL_TPC)
+  {
+
+    vector<string> sep = split(messageTemp.c_str(), ':');
+    if (sep[0].c_str() == MOTION_SENSOR_ID)
+    {
+      mqttLightControl.setOperationMode(atoi(sep[1].c_str()));
+    }
   }
   Serial.println();
 }
 
 ///////////////////////// CUSTOM CODE ///////////////////////////////////////
-
 
 void setup()
 {
@@ -156,23 +152,21 @@ void setup()
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-///////////////////////// CUSTOM CODE ///////////////////////////////////////
+  ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
-  pinMode(MS_PIN, INPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(MS_PIN, INPUT); // Initialize the BUILTIN_LED pin as an output
   pinMode(RELAY_PIN, OUTPUT);
-  
+
   Serial.begin(9600);
 
-///////////////////////// CUSTOM CODE ///////////////////////////////////////
-
-
+  ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 }
 
 void loop()
 {
   ArduinoOTA.handle();
 
-///////////////////////// CUSTOM CODE ///////////////////////////////////////
+  ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
   mqttLightControl.setCallback(callback);
 
@@ -181,9 +175,10 @@ void loop()
   mqttLightControl.updateState(analogRead(MS_PIN));
   Serial.print("Analog sygnal: ");
   Serial.println(analogRead(MS_PIN));
-  if(RELAY_HIGH) digitalWrite(RELAY_PIN, mqttLightControl.getState());
-  else digitalWrite(RELAY_PIN, !(mqttLightControl.getState()));
+  if (RELAY_HIGH)
+    digitalWrite(RELAY_PIN, mqttLightControl.getState());
+  else
+    digitalWrite(RELAY_PIN, !(mqttLightControl.getState()));
 
-///////////////////////// CUSTOM CODE ///////////////////////////////////////
-
+  ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 }

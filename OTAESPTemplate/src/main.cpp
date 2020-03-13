@@ -6,8 +6,8 @@
 #include <ArduinoOTA.h>
 
 #ifndef STASSID
-#define STASSID "your-ssid"
-#define STAPSK "your-password"
+#define STASSID "KhvorikNet-24"
+#define STAPSK "Y739ex777"
 #endif
 
 const char *ssid = STASSID;
@@ -15,7 +15,7 @@ const char *password = STAPSK;
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println("Booting");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
