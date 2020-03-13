@@ -1,4 +1,11 @@
 #include <Arduino.h>
+
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+
+///////////////////////// CUSTOM INCLUDES //////////////////////////////////
 #include "MQTTLightControl.h"
 
 
@@ -13,17 +20,26 @@
 #include "Credentials.h"
 #include "Constants.h"
 
-// Update these with values suitable for your network.
+///////////////////////// CUSTOM INCLUDES //////////////////////////////////
+
+#ifndef STASSID
+#define STASSID "your-ssid"
+#define STAPSK "your-password"
+#endif
+
+const char *ssid = STASSID;
+const char *password = STAPSK;
+
+
+///////////////////////// CUSTOM CODE ///////////////////////////////////////
+
 char msg[50];
-
 MQTTLightControl mqttLightControl((char*) MOTION_SENSOR_ID, (char*) MQTT_SERVER, 1883/*, callback*/);
-
 int MSValue = 0;
 
 // PINS DECLARATION
 const int RELAY_PIN = D1;
 const int MS_PIN = A0;
-
 ////////////
 
 using namespace std;
@@ -38,65 +54,6 @@ vector<string> split(string str, char delimiter) {
  
   return internal;
 }
-
-/*
-void sendMessage(char* topicName, char message[]) {
-  // current date/time based on current system
-  time_t now = time(0);
-   
-  // convert now to string form
-  char* dt = ctime(&now);
-
-  snprintf (msg, 50, "%s%s: %s", dt, MOTION_SENSOR_ID, message);
-  client.publish(topicName, msg);
-}
-
-void sendMSState(boolean currState) {
-  char message[50];
-  snprintf (message, 50, "%d", currState);
-  sendMessage(MOTION_SENSOR_STATE_TPC, message);
-}
-
-void sendOperationMode(int mode) {
-  char message[50];
-  snprintf (message, 50, "%d", mode);
-  sendMessage(DEVICE_OPERATION_MODE_TPC, message);
-}*/
-
-/*
-void setup_wifi() {
-
-  delay(10);
-  // We start by connecting to a WiFi network
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(WIFI_SSID);
-
-  WiFi.begin(WIFI_SSID, WIFI_PSSWD);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  randomSeed(micros());
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-}*/
-
-/*
-
-void setOperationMode(int mode) {
-  Serial.print("DEVICE ");
-  Serial.print(MOTION_SENSOR_ID);
-  Serial.print(": Changing operation mode to ");
-  Serial.println(mode);
-  operationMode = getOperationMode(mode);
-  sendOperationMode(operationMode);
-}*/
 
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -122,98 +79,100 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.println();
 }
 
+///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
 
-/*
-void reconnect(String clientId) {
-  // Loop until we're reconnected
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-    if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PSSWD)) {
-      Serial.println("connected");
-      // Once connected, publish an announcement...
-      client.publish(GREETING_TPC, (clientId + " connected").c_str());
-      // ... and resubscribe
-      client.subscribe(DEVICE_OPERATION_CONTROL_TPC);
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println("Booting");
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.waitForConnectResult() != WL_CONNECTED)
+  {
+    Serial.println("Connection Failed! Rebooting...");
+    delay(5000);
+    ESP.restart();
   }
-}
-*/
 
-void setup() {
+  // Port defaults to 8266
+  // ArduinoOTA.setPort(8266);
+
+  // Hostname defaults to esp8266-[ChipID]
+  // ArduinoOTA.setHostname("myesp8266");
+
+  // No authentication by default
+  // ArduinoOTA.setPassword("admin");
+
+  // Password can be set with it's md5 value as well
+  // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
+  // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
+
+  ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH)
+    {
+      type = "sketch";
+    }
+    else
+    { // U_SPIFFS
+      type = "filesystem";
+    }
+
+    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+    Serial.println("Start updating " + type);
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR)
+    {
+      Serial.println("Auth Failed");
+    }
+    else if (error == OTA_BEGIN_ERROR)
+    {
+      Serial.println("Begin Failed");
+    }
+    else if (error == OTA_CONNECT_ERROR)
+    {
+      Serial.println("Connect Failed");
+    }
+    else if (error == OTA_RECEIVE_ERROR)
+    {
+      Serial.println("Receive Failed");
+    }
+    else if (error == OTA_END_ERROR)
+    {
+      Serial.println("End Failed");
+    }
+  });
+  ArduinoOTA.begin();
+  Serial.println("Ready");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+///////////////////////// CUSTOM CODE ///////////////////////////////////////
+
   pinMode(MS_PIN, INPUT);     // Initialize the BUILTIN_LED pin as an output
   pinMode(RELAY_PIN, OUTPUT);
   
-  //digitalWrite(RELAY_PIN, HIGH);
   Serial.begin(9600);
 
-  //mqttLightControl = MQTTLightControl((char*) MOTION_SENSOR_ID, (char*) MQTT_PORT, 1883, callback);
+///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
-/*  setup_wifi();
-  client.setServer(MQTT_SERVER, 1883);
-  client.setCallback(callback);  */
+
 }
 
+void loop()
+{
+  ArduinoOTA.handle();
 
-/*
-void msDrivenOperation() {
-    MSValue = analogRead(MS_PIN);
-
-    Serial.print("MSValue = ");
-    Serial.println(MSValue);
-
-    if (MSValue >= 333) MSState = HIGH;
-    else MSState = LOW;
-
-    //boolean RelayState = digitalRead(RELAY_SCAN);
-    //Serial.println("MSState = " + MSState);
-
-
-    if (MSState != MSPreviousState) {
-      MSPreviousState = MSState;
-      Serial.println("State changed!");
-      digitalWrite(RELAY_PIN, !MSState);
-      sendMSState(MSState);
-    }
-}
-
-void offOperation() {
-  if(MSState == HIGH) {
-    MSState = LOW;
-    digitalWrite(RELAY_PIN, !MSState);
-    sendMSState(MSState);
-  }
-}
-
-void onOperation() {
-  if(MSState == LOW) {
-    startTimeOnOperationMode = millis();
-    MSState = HIGH;
-    digitalWrite(RELAY_PIN, !MSState);
-    sendMSState(MSState);
-  }
-  else
-  {
-    float currTime = millis();
-    if((currTime - startTimeOnOperationMode) >= MAX_ON_OPERATION_MODE_DURATION_MS) offOperation();
-  }
-  
-}*/
-
-
-void loop() {
-
-  // if (!client.connected()) {
-  //   reconnect(MOTION_SENSOR_ID + String(random(0xffff), HEX));
-  // }
-  // client.loop();
+///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
   mqttLightControl.setCallback(callback);
 
@@ -224,5 +183,7 @@ void loop() {
   Serial.println(analogRead(MS_PIN));
   if(RELAY_HIGH) digitalWrite(RELAY_PIN, mqttLightControl.getState());
   else digitalWrite(RELAY_PIN, !(mqttLightControl.getState()));
-}
 
+///////////////////////// CUSTOM CODE ///////////////////////////////////////
+
+}
