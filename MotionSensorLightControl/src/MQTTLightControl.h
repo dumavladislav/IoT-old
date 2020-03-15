@@ -1,38 +1,38 @@
 #pragma once
 
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include "IWifiDevice.h"
 #include "IMQTTDevice.h"
+#include "MQTTClient.h"
 #include "Constants.h"
+#include "Credentials.h"
 
+enum operationModes
+{
+    MSDRIVEN,
+    ON,
+    OFF
+};
 
-enum operationModes { MSDRIVEN, ON, OFF };
-
-class MQTTLightControl: public IWifiDevice, public IMQTTDevice {
+class MQTTLightControl /*: public IWifiDevice, public IMQTTDevice*/
+{
 
 public:
-    MQTTLightControl(char* devId, char* mqttServer, int mqttPort/*, MQTT_CALLBACK_SIGNATURE*/);
+    MQTTLightControl(char *devId, char *mqttServer, int mqttPort /*, MQTT_CALLBACK_SIGNATURE*/);
     void setCallback(MQTT_CALLBACK_SIGNATURE);
-    void wifiConnect(char* ssid, char* password);
-    void mqttConnect(char* mqttUsr, char* mqttPasswd);
-    void sendMessage(char* topicName, char message[]);
+    void connect();
+    void keepAlive(char *mqttUsr, char *mqttPasswd);
 
-    void keepAlive(char* mqttUsr, char* mqttPasswd);
     void updateState(int newState);
-    
+
     operationModes getOperationMode();
     void setOperationMode(int mode);
 
     int getState();
-    
+
 private:
-
-    char* deviceId;
-    char* deviceSessionId;
-
-    PubSubClient client;
+    MQTTClient *mqttClient;
 
     operationModes operationMode = operationModes::MSDRIVEN;
     boolean MSPreviousState = 0;

@@ -26,7 +26,7 @@ const char *password = WIFI_PSSWD;
 ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
 char msg[50];
-MQTTLightControl mqttLightControl((char *)MOTION_SENSOR_ID, (char *)MQTT_SERVER, 1883 /*, callback*/);
+MQTTLightControl *mqttLightControl;
 int MSValue = 0;
 
 // PINS DECLARATION
@@ -70,7 +70,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     vector<string> sep = split(messageTemp.c_str(), ':');
     if (sep[0].c_str() == MOTION_SENSOR_ID)
     {
-      mqttLightControl.setOperationMode(atoi(sep[1].c_str()));
+      mqttLightControl->setOperationMode(atoi(sep[1].c_str()));
     }
   }
   Serial.println();
@@ -157,7 +157,11 @@ void setup()
   pinMode(MS_PIN, INPUT); // Initialize the BUILTIN_LED pin as an output
   pinMode(RELAY_PIN, OUTPUT);
 
-  Serial.begin(9600);
+  //  Serial.begin(9600);
+
+  mqttLightControl = new MQTTLightControl((char *)MOTION_SENSOR_ID, (char *)MQTT_SERVER, 1883 /*, callback*/);
+  mqttLightControl->setCallback(callback);
+  mqttLightControl->connect();
 
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 }
@@ -168,17 +172,13 @@ void loop()
 
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
-  mqttLightControl.setCallback(callback);
-
-  mqttLightControl.keepAlive(MQTT_USER, MQTT_PSSWD);
+  mqttLightControl->keepAlive(MQTT_USER, MQTT_PSSWD);
   delay(10);
-  mqttLightControl.updateState(analogRead(MS_PIN));
-  Serial.print("Analog sygnal: ");
-  Serial.println(analogRead(MS_PIN));
+  mqttLightControl->updateState(analogRead(MS_PIN));
+  //  Serial.println(analogRead(MS_PIN));
   if (RELAY_HIGH)
-    digitalWrite(RELAY_PIN, mqttLightControl.getState());
+    digitalWrite(RELAY_PIN, mqttLightControl->getState());
   else
-    digitalWrite(RELAY_PIN, !(mqttLightControl.getState()));
-
+    digitalWrite(RELAY_PIN, !(mqttLightControl->getState()));
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 }
