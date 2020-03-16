@@ -47,13 +47,18 @@ public class JMQTTClient {
         options.setUserName(mqttProps.getProperty("mqtt.user"));
         options.setPassword(mqttProps.getProperty("mqtt.password").toCharArray());
 
-        String publisherId = UUID.randomUUID().toString();
+        String clientId = UUID.randomUUID().toString();
         try {
-            IMqttClient publisher = new MqttClient(mqttProps.getProperty("mqtt.serverUrl").toString(),publisherId);
-            publisher.connect(options);
+            IMqttClient mqttClient = new MqttClient(mqttProps.getProperty("mqtt.serverUrl").toString(),clientId);
+            mqttClient.connect(options);
 
-            LightControlCollector lcc = new LightControlCollector(publisher);
+            // Publish example
+            PublisherTemplate lcc = new PublisherTemplate(mqttClient);
             lcc.call();
+
+            // Subscribe example
+            SubscriberTemplate st = new SubscriberTemplate(mqttClient);
+            st.subscribe("test/");
 
         } catch (MqttException e) {
             e.printStackTrace();

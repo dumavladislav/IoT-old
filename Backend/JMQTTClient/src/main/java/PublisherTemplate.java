@@ -4,11 +4,11 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import java.util.Random;
 import java.util.concurrent.Callable;
 
-public class LightControlCollector implements Callable<Void> {
+public class PublisherTemplate implements Callable<Void> {
 
     private IMqttClient client;
 
-    public LightControlCollector(IMqttClient client) {
+    public PublisherTemplate(IMqttClient client) {
         this.client = client;
     }
 
