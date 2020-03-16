@@ -1,0 +1,67 @@
+import org.eclipse.paho.client.mqttv3.IMqttClient;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.UUID;
+
+public class JMQTTClient {
+
+    public static Properties readProperties() throws FileNotFoundException, IOException {
+        File file = new File("./src/main/resources/MqttProperties.conf");
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileReader(file));
+            return properties;
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Hey there");
+
+        //JMQTTClient client = new JMQTTClient();
+        Properties mqttProps = null;
+        try {
+            mqttProps = readProperties();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setAutomaticReconnect(true);
+        options.setCleanSession(true);
+        options.setConnectionTimeout(20);
+        options.setUserName(mqttProps.getProperty("mqtt.user"));
+        options.setPassword(mqttProps.getProperty("mqtt.password").toCharArray());
+
+        String publisherId = UUID.randomUUID().toString();
+        try {
+            IMqttClient publisher = new MqttClient(mqttProps.getProperty("mqtt.serverUrl").toString(),publisherId);
+            publisher.connect(options);
+
+            LightControlCollector lcc = new LightControlCollector(publisher);
+            lcc.call();
+
+        } catch (MqttException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+}
