@@ -1,12 +1,14 @@
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-import static java.lang.Thread.sleep;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class SubscriberTemplate {
 
     private IMqttClient client;
+
+    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
 
     public SubscriberTemplate(IMqttClient client) {
         this.client = client;
@@ -16,27 +18,7 @@ public class SubscriberTemplate {
         // CountDownLatch receivedSignal = new CountDownLatch(10);
         try {
             client.subscribe(topicIn, (topic, msg) -> {
-                Thread messageProcessingTh = new Thread(new Runnable() {
-                    private MqttMessage msg;
-                    public Runnable init(MqttMessage msg) {
-                        this.msg = msg;
-                        return this;
-                    }
-
-                    @Override
-                    public void run() {
-                        byte[] payload = this.msg.getPayload();
-                        try {
-                            sleep(10000); // - just to test multi threading
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        System.out.println(new String(payload));
-                        // receivedSignal.countDown();
-                    }
-                }.init(msg));
-                messageProcessingTh.start();
-
+                executor.submit(new MessageProcessor(msg));
             });
             // receivedSignal.await(1, TimeUnit.MINUTES);
         } catch (MqttException e) {
