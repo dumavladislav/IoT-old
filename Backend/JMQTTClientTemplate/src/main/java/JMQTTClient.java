@@ -58,7 +58,7 @@ public class JMQTTClient {
 
             // Subscribe example
             SubscriberTemplate st = new SubscriberTemplate(mqttClient);
-            st.subscribe("test/");
+            st.subscribe("MotionSensors/Hall");
 
         } catch (MqttException e) {
             e.printStackTrace();

@@ -1,4 +1,4 @@
-package org.dumskyhome.lightcontrolagent.datamodel;
+package org.dumskyhome.lightcontrolagent.persistence.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedDate;
