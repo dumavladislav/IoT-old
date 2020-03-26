@@ -1,0 +1,7 @@
+# Copy files to server
+scp -r ./* dumavla@192.168.1.53:~/light-control-agent
+
+
+#docker build
+sudo docker build .
+sudo docker run --name light-control-agent-rev1  --restart unless-stopped -it -d 94f523570a6a

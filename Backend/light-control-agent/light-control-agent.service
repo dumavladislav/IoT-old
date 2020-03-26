@@ -1,0 +1,10 @@
+[Unit]
+Description=Dumskyhome Light Control Agent
+After=syslog.target
+
+[Service]
+User=root
+ExecStart=/usr/src/light-control-agent/light-control-agent-0.0.1-SNAPSHOT.jar SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
