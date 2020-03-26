@@ -1,0 +1,6 @@
+mqtt.serverUrl=tcp://mqttServer:1883
+mqtt.user=
+mqtt.password=
+
+
+mqtt.eventsTopic =
