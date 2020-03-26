@@ -1,6 +1,5 @@
 package org.dumskyhome.lightcontrolagent.MQTT;
 
-import org.dumskyhome.lightcontrolagent.persistence.services.EventsService;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -95,5 +94,11 @@ public class MqttAgent {
                 .exceptionally(handleGetCarFailure);
     }*/
 
+    public void runMqttService() {
+        connect();
+        if (isConnected()) {
+            subscribeToHaEvents(null);
+        }
+    }
 
 }

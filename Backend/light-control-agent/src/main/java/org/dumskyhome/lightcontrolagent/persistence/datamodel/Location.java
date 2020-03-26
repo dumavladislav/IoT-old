@@ -1,7 +1,5 @@
 package org.dumskyhome.lightcontrolagent.persistence.datamodel;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
