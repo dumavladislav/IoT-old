@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -36,7 +37,10 @@ public class MqttAgent {
     public MqttAgent() {
         properties = new Properties();
         try {
-            properties.load(new FileReader(new File("src/main/resources/MQTT.config")));
+            InputStream input = null;
+            input = ClassLoader.getSystemClassLoader().getResourceAsStream("MQTT.config");
+            properties.load(input);
+            //properties.load(new FileReader(new File("src/main/resources/MQTT.config")));
             clientId = UUID.randomUUID().toString();
             mqttClient = new MqttClient(properties.getProperty("mqtt.serverUrl"), clientId);
             //this.eventsService = eventsService;
