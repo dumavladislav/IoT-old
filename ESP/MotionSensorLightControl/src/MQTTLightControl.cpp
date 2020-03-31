@@ -1,20 +1,24 @@
 #include "MQTTLightControl.h"
-#include "MQTTClient.h"
+#include "MQTT/MQTTClient.h"
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
-#include "WifiConnect.h"
+#include "./Network/WifiConnect.h"
+#include "MQTT/MessageBuilder.h"
+
+#include <iostream>
+#include <unordered_map>
 
 MQTTLightControl::MQTTLightControl(char *devId, char *mqttServer, int mqttPort, uint32_t chipId)
 {
-  this->deviceId = devId;
-  this->chipId = chipId;
+  this->authorizationBlock.deviceId = devId;
+  this->authorizationBlock.chipId = chipId;
   WifiConnect* wifiConnect = new WifiConnect(WIFI_SSID, (char*) WIFI_PSSWD);
   wifiConnect->connect();
 
   Serial.println("MAC:");
   Serial.println(wifiConnect->getMacAddress());
-  this->macAddress = wifiConnect->getMacAddress();
-  this->ipAddress = wifiConnect->getIpAddress().toString();
+  this->authorizationBlock.macAddress = wifiConnect->getMacAddress();
+  this->authorizationBlock.ipAddress = wifiConnect->getIpAddress().toString();
 
   mqttClient = new MQTTClient(devId, mqttServer, mqttPort, wifiConnect->getNetworkClient());
   MSState = LOW;
@@ -52,16 +56,16 @@ void MQTTLightControl::authorizationRequest() {
 
     DynamicJsonDocument jsonDoc(jsonSize);
 
-    startTimeOnOperationMode = millis();
-    String msgId = (char *)((String)deviceId 
+    float startTimeOnOperationMode = millis();
+    String msgId = (char *)((String)authorizationBlock.deviceId 
     + String("_") + String(random(0xffff), HEX) 
     + String("_") + (String)startTimeOnOperationMode
     ).c_str();
 
     jsonDoc["msgId"] = msgId;
-    jsonDoc["chipId"] = this->chipId;
-    jsonDoc["macAddress"] = this->macAddress;
-    jsonDoc["ipAddress"] = this->ipAddress;
+    jsonDoc["chipId"] = this->authorizationBlock.chipId;
+    jsonDoc["macAddress"] = this->authorizationBlock.macAddress;
+    jsonDoc["ipAddress"] = this->authorizationBlock.ipAddress;
 
     // JsonArray data = jsonDoc.createNestedArray("data");
     // data.add(48.756080);
@@ -140,7 +144,7 @@ void MQTTLightControl::sendOperationMode()
 {
   char message[50];
   snprintf(message, 50, "%d", operationMode);
-  mqttClient->sendMessage(UPDATE_DEVICE_SETTINGS_TPC, message);
+  mqttClient->sendMessage(DEVICE_SETTINGS_RESPONSE_TPC, message);
 }
 
 void MQTTLightControl::msDrivenOperation(int newState)
@@ -169,6 +173,7 @@ void MQTTLightControl::offOperation()
 
 void MQTTLightControl::onOperation()
 {
+  float startTimeOnOperationMode = 0;
   if (MSState == LOW)
   {
     startTimeOnOperationMode = millis();
@@ -189,13 +194,21 @@ void MQTTLightControl::authorizationResponse(String message) {
 
   deserializeJson(jsonDoc, message);
 
-  if(String((const char*)jsonDoc["macAddress"]) == this->macAddress) {
+  if(String((const char*)jsonDoc["macAddress"]) == this->authorizationBlock.macAddress) {
 
-    this->authorized = jsonDoc["authorized"];
-    this->securityToken = (const char *)jsonDoc["token"];
+    this->authorizationBlock.authorized = jsonDoc["authorized"];
+    this->authorizationBlock.securityToken = (const char *)jsonDoc["token"];
 
-
-    Serial.println(authorized);
-    Serial.println(securityToken);
+    settingsRequest();
   }
+}
+
+
+
+void MQTTLightControl::settingsRequest() {
+
+  MessageBuilder messageBuilder(authorizationBlock);
+  messageBuilder.addElement("requestType", "settings");
+  mqttClient->sendMessage(DEVICE_SETTINGS_REQUEST_TPC, messageBuilder.generateJson());
+  
 }

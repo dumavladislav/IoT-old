@@ -1,5 +1,5 @@
 
-#include "MQTTClient.h"
+#include "MQTT/MQTTClient.h"
 
 MQTTClient::MQTTClient(char *devId, char *mqttServer, int mqttPort, Client* networkClient)
 {
@@ -67,8 +67,7 @@ void MQTTClient::setCallback(MQTT_CALLBACK_SIGNATURE)
 
 void MQTTClient::sendMessage(char *topicName, String message)
 {
-    if(client.publish(topicName, message.c_str())) Serial.println("Message published");
-    else Serial.println("Message NOT published");
+    if(!client.publish(topicName, message.c_str())) Serial.println("Message NOT published");
 }
 
 
