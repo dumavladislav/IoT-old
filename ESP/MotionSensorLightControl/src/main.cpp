@@ -1,25 +1,12 @@
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
 ///////////////////////// CUSTOM INCLUDES //////////////////////////////////
 #include "MQTTLightControl.h"
-
-#include <iostream>
-#include <ctime>
-#include <iostream>
-#include <vector>
-#include <string>
-#include <sstream>
-
-#include <chrono> 
-
-
 #include "./Constants/Credentials.h"
-#include "./Constants/Constants.h"
+//#include "./Constants/Constants.h"
 
 ///////////////////////// CUSTOM INCLUDES //////////////////////////////////
 
@@ -37,20 +24,6 @@ const int RELAY_PIN = D1;
 const int MS_PIN = A0;
 ////////////
 
-using namespace std;
-vector<string> split(string str, char delimiter)
-{
-  vector<string> internal;
-  stringstream ss(str); // Turn the string into a stream.
-  string tok;
-
-  while (getline(ss, tok, delimiter))
-  {
-    internal.push_back(tok);
-  }
-
-  return internal;
-}
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
@@ -68,6 +41,11 @@ void callback(char *topic, byte *payload, unsigned int length)
   Serial.println();
 
   if (String(topic) == AUTHORIZATION_REQUESTS_STATUS_TPC)
+  {
+    mqttLightControl->authorizationResponse(messageTemp);
+  }
+
+  if (String(topic) == DEVICE_SETTINGS_APPLY_TPC)
   {
     mqttLightControl->authorizationResponse(messageTemp);
   }
@@ -159,7 +137,7 @@ void setup()
   //  Serial.begin(9600);
 
   mqttLightControl = new MQTTLightControl(
-    (char *)MOTION_SENSOR_ID, 
+  //  (char *)MOTION_SENSOR_ID, 
     (char *)MQTT_SERVER, 1883,  
     ESP.getChipId());
   mqttLightControl->setCallback(callback);
@@ -179,7 +157,7 @@ void loop()
   delay(10);
   mqttLightControl->updateState(analogRead(MS_PIN));
   //  Serial.println(analogRead(MS_PIN));
-  if (RELAY_HIGH)
+  if (mqttLightControl->getSettings().relayMode)
     digitalWrite(RELAY_PIN, mqttLightControl->getState());
   else
     digitalWrite(RELAY_PIN, !(mqttLightControl->getState()));

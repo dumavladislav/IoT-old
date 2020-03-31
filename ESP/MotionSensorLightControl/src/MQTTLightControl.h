@@ -1,27 +1,19 @@
 #pragma once
 
 #include <Arduino.h>
-#include <PubSubClient.h>
 #include "MQTT/MQTTClient.h"
-#include "Constants/Constants.h"
 #include "Constants/Credentials.h"
+#include "./Settings/DeviceSettings.h"
 #include "AuthorizationBlock.h"
 #include <iostream>
 #include <unordered_map>
-//#include "INetworkConnect.h"
-
-enum operationModes
-{
-    MSDRIVEN,
-    ON,
-    OFF
-};
 
 class MQTTLightControl /*: public IWifiDevice, public IMQTTDevice*/
 {
 
 public:
-    MQTTLightControl(char *devId, char *mqttServer, int mqttPort, uint32_t chipId);
+    MQTTLightControl(/*char *devId,*/ char *mqttServer, int mqttPort, uint32_t chipId);
+    DeviceSettings getSettings();
     void setCallback(MQTT_CALLBACK_SIGNATURE);
     void connect();
     void keepAlive(char *mqttUsr, char *mqttPasswd);
@@ -42,7 +34,6 @@ private:
 
     MQTTClient *mqttClient;
 
-    operationModes operationMode = operationModes::MSDRIVEN;
     boolean MSPreviousState = 0;
     boolean MSState = 0;
 
@@ -60,4 +51,5 @@ private:
     void settingsRequest();
 
     AuthorizationBlock authorizationBlock;
+    DeviceSettings deviceSettings;
 };

@@ -8,9 +8,9 @@
 #include <iostream>
 #include <unordered_map>
 
-MQTTLightControl::MQTTLightControl(char *devId, char *mqttServer, int mqttPort, uint32_t chipId)
+MQTTLightControl::MQTTLightControl(/*char *devId, */char *mqttServer, int mqttPort, uint32_t chipId)
 {
-  this->authorizationBlock.deviceId = devId;
+  this->authorizationBlock.deviceId = deviceSettings.deviceId;
   this->authorizationBlock.chipId = chipId;
   WifiConnect* wifiConnect = new WifiConnect(WIFI_SSID, (char*) WIFI_PSSWD);
   wifiConnect->connect();
@@ -20,8 +20,12 @@ MQTTLightControl::MQTTLightControl(char *devId, char *mqttServer, int mqttPort, 
   this->authorizationBlock.macAddress = wifiConnect->getMacAddress();
   this->authorizationBlock.ipAddress = wifiConnect->getIpAddress().toString();
 
-  mqttClient = new MQTTClient(devId, mqttServer, mqttPort, wifiConnect->getNetworkClient());
+  mqttClient = new MQTTClient((char*)(deviceSettings.deviceId.c_str()), mqttServer, mqttPort, wifiConnect->getNetworkClient());
   MSState = LOW;
+}
+
+DeviceSettings MQTTLightControl::getSettings() {
+  return this->deviceSettings;
 }
 
 void MQTTLightControl::setCallback(MQTT_CALLBACK_SIGNATURE)
@@ -109,13 +113,13 @@ void MQTTLightControl::updateState(int newState)
 
 operationModes MQTTLightControl::getOperationMode()
 {
-  return operationMode;
+  return deviceSettings.operationMode;
 }
 
 void MQTTLightControl::setOperationMode(int mode)
 {
   Serial.println(mode);
-  operationMode = decodeOperationMode(mode);
+  deviceSettings.operationMode = decodeOperationMode(mode);
   sendOperationMode();
 }
 
@@ -143,8 +147,8 @@ void MQTTLightControl::sendMSState()
 void MQTTLightControl::sendOperationMode()
 {
   char message[50];
-  snprintf(message, 50, "%d", operationMode);
-  mqttClient->sendMessage(DEVICE_SETTINGS_RESPONSE_TPC, message);
+  snprintf(message, 50, "%d", deviceSettings.operationMode);
+  mqttClient->sendMessage(DEVICE_SETTINGS_APPLY_TPC, message);
 }
 
 void MQTTLightControl::msDrivenOperation(int newState)
@@ -183,7 +187,7 @@ void MQTTLightControl::onOperation()
   else
   {
     float currTime = millis();
-    if ((currTime - startTimeOnOperationMode) >= MAX_ON_OPERATION_MODE_DURATION_MS)
+    if ((currTime - startTimeOnOperationMode) >= deviceSettings.maxOnOperationModeDuration)
       offOperation();
   }
 }
@@ -202,8 +206,6 @@ void MQTTLightControl::authorizationResponse(String message) {
     settingsRequest();
   }
 }
-
-
 
 void MQTTLightControl::settingsRequest() {
 
