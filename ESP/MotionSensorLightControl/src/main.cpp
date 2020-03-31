@@ -15,6 +15,9 @@
 #include <string>
 #include <sstream>
 
+#include <chrono> 
+
+
 #include "Credentials.h"
 #include "Constants.h"
 
@@ -64,19 +67,15 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
   Serial.println();
 
-  if (topic == DEVICE_OPERATION_CONTROL_TPC)
+  if (String(topic) == AUTHORIZATION_REQUESTS_STATUS_TPC)
   {
-
-    vector<string> sep = split(messageTemp.c_str(), ':');
-    if (sep[0].c_str() == MOTION_SENSOR_ID)
-    {
-      mqttLightControl->setOperationMode(atoi(sep[1].c_str()));
-    }
+    mqttLightControl->authorizationResponse(messageTemp);
   }
   Serial.println();
 }
 
 ///////////////////////// CUSTOM CODE ///////////////////////////////////////
+
 
 void setup()
 {
@@ -159,9 +158,13 @@ void setup()
 
   //  Serial.begin(9600);
 
-  mqttLightControl = new MQTTLightControl((char *)MOTION_SENSOR_ID, (char *)MQTT_SERVER, 1883 /*, callback*/);
+  mqttLightControl = new MQTTLightControl(
+    (char *)MOTION_SENSOR_ID, 
+    (char *)MQTT_SERVER, 1883,  
+    ESP.getChipId());
   mqttLightControl->setCallback(callback);
   mqttLightControl->connect();
+  mqttLightControl->authorizationRequest();
 
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 }
