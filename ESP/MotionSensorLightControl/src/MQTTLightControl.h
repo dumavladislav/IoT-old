@@ -21,12 +21,13 @@ public:
     // ------------------------ Authorization ----------------------------
     void authorizationRequest();
     void authorizationResponse(String message);
+
+    // -------------------------- Settings -------------------------------
+    void applyNewSettings(String message);  // when MQTT message comes
+    void setDeviceSettings(DeviceSettings newSettings); // setter
     
     // -------------------------- Operation ------------------------------
     void updateState(int newState);
-
-    operationModes getOperationMode();
-    void setOperationMode(int mode);
 
     int getState();
 

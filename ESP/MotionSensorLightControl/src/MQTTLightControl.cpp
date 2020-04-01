@@ -4,6 +4,8 @@
 #include <ESP8266WiFi.h>
 #include "./Network/WifiConnect.h"
 #include "MQTT/MessageBuilder.h"
+#include "MQTT/MessageParser.h"
+#include "./Settings/DeviceSettings.h"
 
 #include <iostream>
 #include <unordered_map>
@@ -95,7 +97,7 @@ void MQTTLightControl::authorizationRequest() {
 
 void MQTTLightControl::updateState(int newState)
 {
-  switch (getOperationMode())
+  switch (deviceSettings.operationMode)
   {
   case operationModes::MSDRIVEN:
     msDrivenOperation(newState);
@@ -109,18 +111,6 @@ void MQTTLightControl::updateState(int newState)
   default:
     break;
   }
-}
-
-operationModes MQTTLightControl::getOperationMode()
-{
-  return deviceSettings.operationMode;
-}
-
-void MQTTLightControl::setOperationMode(int mode)
-{
-  Serial.println(mode);
-  deviceSettings.operationMode = decodeOperationMode(mode);
-  sendOperationMode();
 }
 
 void MQTTLightControl::sendMSState(boolean currState){
@@ -187,7 +177,7 @@ void MQTTLightControl::onOperation()
   else
   {
     float currTime = millis();
-    if ((currTime - startTimeOnOperationMode) >= deviceSettings.maxOnOperationModeDuration)
+    if ((currTime - startTimeOnOperationMode) >= deviceSettings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration)
       offOperation();
   }
 }
@@ -212,5 +202,24 @@ void MQTTLightControl::settingsRequest() {
   MessageBuilder messageBuilder(authorizationBlock);
   messageBuilder.addElement("requestType", "settings");
   mqttClient->sendMessage(DEVICE_SETTINGS_REQUEST_TPC, messageBuilder.generateJson());
-  
+  mqttClient->subscribe(DEVICE_SETTINGS_APPLY_TPC);
+}
+
+void MQTTLightControl::applyNewSettings(String message) {
+  Serial.println("New settings received!");
+  MessageParser messageParser(authorizationBlock);
+  if(messageParser.parseIncomingMessage(message.c_str())) {
+    JsonObject data = messageParser.getDataBlock();
+    DeviceSettings newSettings;
+    newSettings.deviceId = (const char*) data["deviceId"];
+    newSettings.operationMode = (operationModes)((int)data["operationMode"]);
+    newSettings.motionSensorSettings.relayMode = data["motionSensorSettings"]["relayMode"];
+    newSettings.motionSensorSettings.msDriveModeSettings.keepOnDurationSec = data["motionSensorSettings"]["msDriveModeSettings"]["keepOnDurationSec"];
+    newSettings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration = data["motionSensorSettings"]["onModeSettings"]["maxOnOperationModeDuration"];
+    this->setDeviceSettings(newSettings);
+  }
+}
+
+void MQTTLightControl::setDeviceSettings(DeviceSettings newSettings) {
+  this->deviceSettings = newSettings;
 }

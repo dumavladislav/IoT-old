@@ -47,7 +47,7 @@ void callback(char *topic, byte *payload, unsigned int length)
 
   if (String(topic) == DEVICE_SETTINGS_APPLY_TPC)
   {
-    mqttLightControl->authorizationResponse(messageTemp);
+    mqttLightControl->applyNewSettings(messageTemp);
   }
   Serial.println();
 }
@@ -157,7 +157,7 @@ void loop()
   delay(10);
   mqttLightControl->updateState(analogRead(MS_PIN));
   //  Serial.println(analogRead(MS_PIN));
-  if (mqttLightControl->getSettings().relayMode)
+  if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
     digitalWrite(RELAY_PIN, mqttLightControl->getState());
   else
     digitalWrite(RELAY_PIN, !(mqttLightControl->getState()));
