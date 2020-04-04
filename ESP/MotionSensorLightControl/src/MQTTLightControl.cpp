@@ -23,7 +23,8 @@ MQTTLightControl::MQTTLightControl(/*char *devId, */char *mqttServer, int mqttPo
   this->authorizationBlock.ipAddress = wifiConnect->getIpAddress().toString();
 
   mqttClient = new MQTTClient((char*)(deviceSettings.deviceId.c_str()), mqttServer, mqttPort, wifiConnect->getNetworkClient());
-  MSState = LOW;
+  setState(LOW);
+  resetTimer();
 }
 
 DeviceSettings MQTTLightControl::getSettings() {
@@ -113,10 +114,6 @@ void MQTTLightControl::updateState(int newState)
   }
 }
 
-void MQTTLightControl::sendMSState(boolean currState){
-
-};
-
 operationModes MQTTLightControl::decodeOperationMode(int intVar)
 {
   operationModes enumVar = static_cast<operationModes>(intVar);
@@ -127,21 +124,25 @@ int MQTTLightControl::getState()
   return MSState;
 }
 
+void MQTTLightControl::setState(int newState) {
+  MSState = newState;
+}
+
 void MQTTLightControl::sendMSState()
 {
   //char message[50];
   //snprintf(message, 50, "%d", MSState);
   MessageBuilder messageBuilder(authorizationBlock);
-  messageBuilder.addElement("msState", String(MSState));
+  messageBuilder.addElement("msState", String(getState()));
   mqttClient->sendMessage(MOTION_TPC, messageBuilder.generateJson());
 }
 
-void MQTTLightControl::sendOperationMode()
-{
-  char message[50];
-  snprintf(message, 50, "%d", deviceSettings.operationMode);
-  mqttClient->sendMessage(DEVICE_SETTINGS_APPLY_TPC, message);
-}
+// void MQTTLightControl::sendOperationMode()
+// {
+//   char message[50];
+//   snprintf(message, 50, "%d", deviceSettings.operationMode);
+//   mqttClient->sendMessage(DEVICE_SETTINGS_APPLY_TPC, message);
+// }
 
 void MQTTLightControl::msDrivenOperation(int newState)
 {
@@ -152,36 +153,47 @@ void MQTTLightControl::msDrivenOperation(int newState)
     newStateDigital = LOW;
   */
 
-  if (MSState != newState)
+  if (getState() != newState)
   {
-    MSState = newState;
-    sendMSState();
+    // Serial.println((millis() - startTimeOfOperation)/1000.0);
+    // Serial.println(deviceSettings.motionSensorSettings.msDriveModeSettings.keepOnDurationSec);
+    // Serial.println();
+    if(
+      newState == HIGH 
+      || 
+      (newState == LOW 
+        and ((millis() - startTimeOfOperation) >= (deviceSettings.motionSensorSettings.msDriveModeSettings.keepOnDurationSec * 1000))
+      )
+    ) {
+      setState(newState);
+      resetTimer();
+      sendMSState();
+    }
   }
 }
 
 void MQTTLightControl::offOperation()
 {
-  if (MSState == HIGH)
+  if (getState() == HIGH)
   {
-    MSState = LOW;
-    sendMSState(MSState);
+    setState(LOW);
+    sendMSState();
   }
 }
 
 void MQTTLightControl::onOperation()
 {
-  float startTimeOnOperationMode = 0;
-  if (MSState == LOW)
+  if (getState() == LOW)
   {
-    startTimeOnOperationMode = millis();
-    MSState = HIGH;
-    sendMSState(MSState);
+    resetTimer();
+    setState(HIGH);
+    sendMSState();
   }
   else
   {
     float currTime = millis();
-    if ((currTime - startTimeOnOperationMode) >= deviceSettings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration)
-      offOperation();
+    if ((currTime - startTimeOfOperation) >= deviceSettings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration)
+      this->deviceSettings.operationMode = operationModes::MSDRIVEN;
   }
 }
 
@@ -225,4 +237,9 @@ void MQTTLightControl::applyNewSettings(String message) {
 
 void MQTTLightControl::setDeviceSettings(DeviceSettings newSettings) {
   this->deviceSettings = newSettings;
+  resetTimer();
+}
+
+void MQTTLightControl::resetTimer() {
+  startTimeOfOperation = millis();
 }

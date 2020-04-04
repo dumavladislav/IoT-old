@@ -30,6 +30,9 @@ public:
     void updateState(int newState);
 
     int getState();
+    void setState(int newState);
+
+    void resetTimer();
 
 private:
 
@@ -38,12 +41,14 @@ private:
     boolean MSPreviousState = 0;
     boolean MSState = 0;
 
-    void sendMSState(boolean currState);
-    void sendOperationMode(int mode);
+    // void sendMSState(boolean currState);
+    // void sendOperationMode(int mode);
 
     operationModes decodeOperationMode(int intVar);
     void sendMSState();
-    void sendOperationMode();
+    // void sendOperationMode();
+
+    float startTimeOfOperation;
 
     void msDrivenOperation(int newState);
     void offOperation();

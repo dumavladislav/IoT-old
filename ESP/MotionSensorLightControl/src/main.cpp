@@ -57,11 +57,11 @@ void callback(char *topic, byte *payload, unsigned int length)
 // Interrupt callback
 ICACHE_RAM_ATTR void msStateChange() {
   msState = digitalRead(MS_PIN);
-  // mqttLightControl->updateState(digitalRead(MS_PIN));
+  mqttLightControl->updateState(msState);
   if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
-   digitalWrite(RELAY_PIN, msState);
+   digitalWrite(RELAY_PIN, mqttLightControl->getState());
   else
-    digitalWrite(RELAY_PIN, !msState);
+    digitalWrite(RELAY_PIN, !mqttLightControl->getState());
 }
 
 
@@ -153,7 +153,7 @@ void setup()
   mqttLightControl->setCallback(callback);
 
   msStateChange();
-  attachInterrupt(digitalPinToInterrupt(MS_PIN), msStateChange, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(MS_PIN), msStateChange, RISING);
 
   mqttLightControl->connect();
   mqttLightControl->authorizationRequest();
@@ -173,11 +173,11 @@ void loop()
 
   //Serial.println(mqttLightControl->getSettings().motionSensorSettings.relayMode);
   //Serial.println(msState);
-/*  if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
+  if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
     digitalWrite(RELAY_PIN, mqttLightControl->getState());
   else
     digitalWrite(RELAY_PIN, !(mqttLightControl->getState()));
-*/
+
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 }
 
