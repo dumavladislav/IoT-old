@@ -129,9 +129,11 @@ int MQTTLightControl::getState()
 
 void MQTTLightControl::sendMSState()
 {
-  char message[50];
-  snprintf(message, 50, "%d", MSState);
-  mqttClient->sendMessage(MOTION_TPC, message);
+  //char message[50];
+  //snprintf(message, 50, "%d", MSState);
+  MessageBuilder messageBuilder(authorizationBlock);
+  messageBuilder.addElement("msState", String(MSState));
+  mqttClient->sendMessage(MOTION_TPC, messageBuilder.generateJson());
 }
 
 void MQTTLightControl::sendOperationMode()
@@ -143,15 +145,16 @@ void MQTTLightControl::sendOperationMode()
 
 void MQTTLightControl::msDrivenOperation(int newState)
 {
-  int newStateDigital = 0;
+  /*int newStateDigital = 0;
   if (newState >= 333)
     newStateDigital = HIGH;
   else
     newStateDigital = LOW;
+  */
 
-  if (MSState != newStateDigital)
+  if (MSState != newState)
   {
-    MSState = newStateDigital;
+    MSState = newState;
     sendMSState();
   }
 }

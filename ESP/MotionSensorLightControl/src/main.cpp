@@ -17,11 +17,11 @@ const char *password = WIFI_PSSWD;
 
 char msg[50];
 MQTTLightControl *mqttLightControl;
-int MSValue = 0;
+volatile bool msState = 0;
 
 // PINS DECLARATION
 const int RELAY_PIN = D1;
-const int MS_PIN = A0;
+const int MS_PIN = D7;
 ////////////
 
 
@@ -53,6 +53,16 @@ void callback(char *topic, byte *payload, unsigned int length)
 }
 
 ///////////////////////// CUSTOM CODE ///////////////////////////////////////
+
+// Interrupt callback
+ICACHE_RAM_ATTR void msStateChange() {
+  msState = digitalRead(MS_PIN);
+  // mqttLightControl->updateState(digitalRead(MS_PIN));
+  if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
+   digitalWrite(RELAY_PIN, msState);
+  else
+    digitalWrite(RELAY_PIN, !msState);
+}
 
 
 void setup()
@@ -141,6 +151,10 @@ void setup()
     (char *)MQTT_SERVER, 1883,  
     ESP.getChipId());
   mqttLightControl->setCallback(callback);
+
+  msStateChange();
+  attachInterrupt(digitalPinToInterrupt(MS_PIN), msStateChange, CHANGE);
+
   mqttLightControl->connect();
   mqttLightControl->authorizationRequest();
 
@@ -155,11 +169,15 @@ void loop()
 
   mqttLightControl->keepAlive(MQTT_USER, MQTT_PSSWD);
   delay(10);
-  mqttLightControl->updateState(analogRead(MS_PIN));
-  //  Serial.println(analogRead(MS_PIN));
-  if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
+  mqttLightControl->updateState(digitalRead(MS_PIN));
+
+  //Serial.println(mqttLightControl->getSettings().motionSensorSettings.relayMode);
+  //Serial.println(msState);
+/*  if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
     digitalWrite(RELAY_PIN, mqttLightControl->getState());
   else
     digitalWrite(RELAY_PIN, !(mqttLightControl->getState()));
+*/
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 }
+
