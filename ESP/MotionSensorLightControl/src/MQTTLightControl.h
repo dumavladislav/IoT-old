@@ -7,6 +7,7 @@
 #include "AuthorizationBlock.h"
 #include <iostream>
 #include <unordered_map>
+#include <RCSwitch.h>
 
 class MQTTLightControl /*: public IWifiDevice, public IMQTTDevice*/
 {
@@ -25,6 +26,8 @@ public:
     // -------------------------- Settings -------------------------------
     void applyNewSettings(String message);  // when MQTT message comes
     void setDeviceSettings(DeviceSettings newSettings); // setter
+    void setDefaultPresets();
+    void applyPreset(int presetNumber);
     
     // -------------------------- Operation ------------------------------
     void updateState(int newState);
@@ -33,6 +36,7 @@ public:
     void setState(int newState);
 
     void resetTimer();
+
 
 private:
 
@@ -58,4 +62,5 @@ private:
 
     AuthorizationBlock authorizationBlock;
     DeviceSettings deviceSettings;
+    std::vector<DeviceSettings> devicePresets;    
 };

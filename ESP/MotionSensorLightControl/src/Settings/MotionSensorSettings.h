@@ -1,5 +1,5 @@
 struct ModeSettings_MSDRIVEN {
-    int keepOnDurationSec = 10;
+    int keepOnDurationSec = 20;
 };
 
 struct ModeSettings_ON {

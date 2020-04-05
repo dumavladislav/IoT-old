@@ -6,7 +6,7 @@
 ///////////////////////// CUSTOM INCLUDES //////////////////////////////////
 #include "MQTTLightControl.h"
 #include "./Constants/Credentials.h"
-//#include "./Constants/Constants.h"
+#include <RCSwitch.h>
 
 ///////////////////////// CUSTOM INCLUDES //////////////////////////////////
 
@@ -21,9 +21,11 @@ volatile bool msState = 0;
 
 // PINS DECLARATION
 const int RELAY_PIN = D1;
+const int IR_REMOTE_PIN = D2;
 const int MS_PIN = D7;
 ////////////
 
+RCSwitch mySwitch = RCSwitch();
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
@@ -158,7 +160,56 @@ void setup()
   mqttLightControl->connect();
   mqttLightControl->authorizationRequest();
 
+  mySwitch.enableReceive(digitalPinToInterrupt(IR_REMOTE_PIN));
+
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
+}
+
+void checkIRRemote() {
+  if (mySwitch.available())
+    {
+
+      int value = mySwitch.getReceivedValue();
+      // if (value == 0)
+      // {
+      //   Serial.print("Unknown encoding");
+      // }
+      // else
+      // {
+
+      //   Serial.print("Received ");
+      //   Serial.print(mySwitch.getReceivedValue());
+      //   Serial.print(" / ");
+      //   Serial.print(mySwitch.getReceivedBitlength());
+      //   Serial.print("bit ");
+      //   Serial.print("Protocol: ");
+      //   Serial.println(mySwitch.getReceivedProtocol());
+      // }
+
+      if (mySwitch.getReceivedValue() == 16736113)
+      {
+        mqttLightControl->applyPreset(0);
+        Serial.write("LOCK Button pressed");
+      }
+      if (mySwitch.getReceivedValue() == 11169970)
+      {
+        mqttLightControl->applyPreset(1);
+        Serial.write("UNLOCK Button pressed");
+      }
+      if (mySwitch.getReceivedValue() == 16736114)
+      {
+        mqttLightControl->applyPreset(2);
+        Serial.write("HORN Button pressed");
+      }
+      if (mySwitch.getReceivedValue() == 16736120)
+      {
+        mqttLightControl->applyPreset(3);
+        Serial.write("OPEN TANK Button pressed");
+      }
+    
+
+      mySwitch.resetAvailable();
+    }
 }
 
 void loop()
@@ -178,6 +229,7 @@ void loop()
   else
     digitalWrite(RELAY_PIN, !(mqttLightControl->getState()));
 
+  checkIRRemote();
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 }
 

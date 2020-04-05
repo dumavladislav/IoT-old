@@ -24,6 +24,7 @@ MQTTLightControl::MQTTLightControl(/*char *devId, */char *mqttServer, int mqttPo
 
   mqttClient = new MQTTClient((char*)(deviceSettings.deviceId.c_str()), mqttServer, mqttPort, wifiConnect->getNetworkClient());
   setState(LOW);
+  setDefaultPresets();
   resetTimer();
 }
 
@@ -238,6 +239,23 @@ void MQTTLightControl::applyNewSettings(String message) {
 void MQTTLightControl::setDeviceSettings(DeviceSettings newSettings) {
   this->deviceSettings = newSettings;
   resetTimer();
+}
+
+void MQTTLightControl::setDefaultPresets() {
+  // for(int i=0; i<devicePresets.size(); i++)
+  // this->devicePresets.
+  devicePresets.assign(4, deviceSettings);
+
+  devicePresets[0].operationMode = operationModes::MSDRIVEN;
+
+  devicePresets[1].operationMode = operationModes::ON;
+
+  devicePresets[2].operationMode = operationModes::OFF;
+  
+}
+
+void MQTTLightControl::applyPreset(int presetNumber) {
+  setDeviceSettings(devicePresets[presetNumber]);
 }
 
 void MQTTLightControl::resetTimer() {
