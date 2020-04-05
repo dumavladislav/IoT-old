@@ -34,20 +34,27 @@ void loop()
       Serial.println(mySwitch.getReceivedProtocol());
     }
 
-    if (mySwitch.getReceivedValue() == 4152588)
+    if (mySwitch.getReceivedValue() == 16736113)
     {
+      Serial.write("LOCK Button pressed");
       digitalWrite(LED, HIGH);
     }
-    if (mySwitch.getReceivedValue() == 4152624)
+    if (mySwitch.getReceivedValue() == 11169970)
     {
+      Serial.write("UNLOCK Button pressed");
       digitalWrite(LED, LOW);
     }
-    if (mySwitch.getReceivedValue() == 15954498)
+    if (mySwitch.getReceivedValue() == 16736114)
     {
+      Serial.write("HORN Button pressed");
       digitalWrite(LED, LOW);
-      delay(1000);
-      digitalWrite(LED, HIGH);
     }
+    if (mySwitch.getReceivedValue() == 16736120)
+    {
+      Serial.write("OPEN TANK Button pressed");
+      digitalWrite(LED, LOW);
+    }
+  
 
     mySwitch.resetAvailable();
   }
