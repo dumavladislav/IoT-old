@@ -18,6 +18,16 @@ public class Device extends AuditModel {
 
     private String ipAddress;
 
+    private boolean blocked;
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
+
     public int getId() {
         return id;
     }
