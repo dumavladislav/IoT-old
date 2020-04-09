@@ -1,6 +1,9 @@
 package org.dumskyhome.authorizationservice.persistence.DAO;
 
 import org.dumskyhome.authorizationservice.persistence.datamodel.Device;
+import org.dumskyhome.authorizationservice.persistence.datamodel.DumskyHomeSession;
+import org.dumskyhome.authorizationservice.persistence.datamodel.RegistrationRequest;
+import org.dumskyhome.authorizationservice.persistence.repositories.DevicesRepository;
 import org.dumskyhome.authorizationservice.persistence.repositories.RegistrationRequestsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,28 +22,28 @@ public class AuthorizationServiceDao {
     @Autowired
     private RegistrationRequestsRepository registrationRequestsRepository;
 
-    @Async
-    public CompletableFuture<Integer> checkAuthorization(String macAddress) {
+    @Autowired
+    private DevicesRepository devicesRepository;
+
+    public DumskyHomeSession checkAuthorization(String macAddress) {
         logger.info("CHECKING AUTHORIZATION: " + macAddress);
-        List<Device> deiviceList = registrationRequestsRepository.findByMacAddress(macAddress);
+        List<Device> deiviceList = devicesRepository.findByMacAddress(macAddress);
         if (deiviceList.size()>0) {
-            createSession(deiviceList.get(0));
-        }
-        else {
-            createRegistrationRequest(macAddress);
+            return createSession(deiviceList.get(0));
         }
         //sleep(5000);
-        logger.info("AUTHORIZATION APPROVED: " + macAddress);
-        return CompletableFuture.completedFuture(1);
-        //return CompletableFuture.completedFuture(0);
+        return null;
     }
 
-    private void createRegistrationRequest(String macAddress) {
+    public void createRegistrationRequest(String macAddress) {
         logger.info("Creating registration request for " + macAddress);
+        RegistrationRequest registrationRequest= new RegistrationRequest(macAddress);
+        registrationRequestsRepository.save(registrationRequest);
     }
 
-    private void createSession(Device device) {
+    private DumskyHomeSession createSession(Device device) {
         logger.info("Creating session for device id: " + device.getId());
+        return null;
     }
 
 }

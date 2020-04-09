@@ -15,6 +15,12 @@ public class RegistrationRequest extends AuditModel {
     @NotNull
     private String macAddress;
 
+    public RegistrationRequest() {}
+
+    public RegistrationRequest(String macAddress) {
+        this.macAddress = macAddress;
+    }
+
     public String getMacAddress() {
         return macAddress;
     }

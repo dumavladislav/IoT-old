@@ -20,6 +20,15 @@ public class Device extends AuditModel {
 
     private boolean blocked;
 
+
+    public Device() {}
+
+    public Device(String macAddress, String ipAddress) {
+        this.setMacAddress(macAddress);
+        this.setIpAddress(ipAddress);
+    }
+
+
     public boolean isBlocked() {
         return blocked;
     }

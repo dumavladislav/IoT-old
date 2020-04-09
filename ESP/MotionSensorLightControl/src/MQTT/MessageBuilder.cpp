@@ -39,10 +39,13 @@ String MessageBuilder::generateJson() {
     // Generate the minified JSON and send it to the Serial port.
     //
 
-    JsonObject data = jsonDoc.createNestedObject("data");
+    if(hashmap.size() > 0) {
 
-    for(std::pair<std::string, std::string> element : hashmap ) {
-      data[element.first.c_str()] = element.second.c_str();
+      JsonObject data = jsonDoc.createNestedObject("data");
+
+      for(std::pair<std::string, std::string> element : hashmap ) {
+        data[element.first.c_str()] = element.second.c_str();
+      }
     }
 
     String jsonSerialized;

@@ -3,7 +3,7 @@ package org.dumskyhome.authorizationservice.persistence.datamodel;
 import javax.persistence.*;
 
 @Entity
-public class Session extends AuditModel {
+public class DumskyHomeSession extends AuditModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
