@@ -1,7 +1,7 @@
-mqtt.serverUrl=tcp://dumskyhome.keenetic.name:1883
-mqtt.user=dumskyhome
-mqtt.password=S746em99
+mqtt.serverUrl=tcp://server:1883
+mqtt.user=
+mqtt.password=
 mqtt.connectionTimeout=10
-mqtt.clientId=AuthorizationService
+mqtt.clientId=
 
-mqtt.topic.authorizationRequests=/HOME_AUTOMATION/AUTHORIZATION_REQUESTS
+mqtt.topic.authorizationRequests=
