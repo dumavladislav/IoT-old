@@ -56,6 +56,7 @@ public class MqttAgent {
             logger.info("Connected to MQTT");
             try {
                 mqttClient.subscribe(env.getProperty("mqtt.topic.authorizationRequests"));
+                mqttClient.subscribe(env.getProperty("mqtt.topic.registrationResponses"));
                 mqttClient.setCallback(mqttMessageProcessor);
                 return true;
             } catch (MqttException e) {
