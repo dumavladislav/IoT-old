@@ -1,11 +1,11 @@
 #include "MQTTLightControl.h"
-#include "MQTT/MQTTClient.h"
+#include <MQTTClient.h>
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
-#include "./Network/WifiConnect.h"
-#include "MQTT/MessageBuilder.h"
-#include "MQTT/MessageParser.h"
-#include "./Settings/DeviceSettings.h"
+#include <WifiConnect.h>
+#include <MessageBuilder.h>
+#include <MessageParser.h>
+#include <DeviceSettings.h>
 
 #include <iostream>
 #include <unordered_map>

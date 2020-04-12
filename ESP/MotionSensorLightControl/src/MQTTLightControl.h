@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Arduino.h>
-#include "MQTT/MQTTClient.h"
+#include <MQTTClient.h>
 #include "Constants/Credentials.h"
-#include "./Settings/DeviceSettings.h"
+#include <DeviceSettings.h>
 #include "AuthorizationBlock.h"
 #include <iostream>
 #include <unordered_map>
