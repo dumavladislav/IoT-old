@@ -30,6 +30,22 @@ File fileCounterFile;
 
 const String deviceId = "GPS1";
 
+void increaseFileCounter() {
+  filesCounter++;
+  SD.remove("fcntr.txt");
+  fileCounterFile = SD.open("fcntr.txt", FILE_WRITE);
+  if (fileCounterFile) {
+    fileCounterFile.print(filesCounter);
+    fileCounterFile.close();
+    Serial.println("Files COUNTER updated!!!");
+  }
+  // if the file isn't open, pop up an error:
+  else {
+    Serial.println("error opening fcntr.txt");
+  }
+  recordsInFileCounter = 1;
+}
+
 void setup()
 {
   Serial.begin(9600);
@@ -68,6 +84,7 @@ void setup()
       if(i > 0) filesCounter = atoi((char*)fileContent);
       Serial.println("Files Counter:");
       Serial.println(filesCounter);
+      increaseFileCounter();
     }
     // if the file isn't open, pop up an error:
     else {
@@ -108,14 +125,14 @@ String getlogString()
   logStringTTT += String(millis());
   logStringTTT += String(",");
   //logStringTTT += String(F("Location: "));
-  if (gps.location.isValid())
+  if (gps.location.isValid() && gps.location.lat() != 0 && gps.location.lng() != 0)
   {
     logStringTTT += String(gps.location.lat(), 6) + String(",") + String(gps.location.lng(),6);
   }
-  else
+  /*else
   {
     logStringTTT += String(F("00.000000")) + String(",") + String(F("00.000000"));
-  }
+  }*/
 
   //logStringTTT += String(F("  Date/Time: "));
    logStringTTT += String(F(","));
@@ -155,10 +172,13 @@ String getlogString()
   return logStringTTT;
 }
 
+
+
 void loop()
 {
   // This sketch displays information every time a new sentence is correctly encoded.
   while (ss.available() > 0)
+  {
     if (gps.encode(ss.read()))
     {
       recordsCounter++;
@@ -166,19 +186,7 @@ void loop()
 
       String logString = getlogString();
       if(recordsInFileCounter > maxRecordsInFile) {
-        filesCounter++;
-        SD.remove("fcntr.txt");
-        fileCounterFile = SD.open("fcntr.txt", FILE_WRITE);
-        if (fileCounterFile) {
-          fileCounterFile.print(filesCounter);
-          fileCounterFile.close();
-          Serial.println("Files COUNTER updated!!!");
-        }
-        // if the file isn't open, pop up an error:
-        else {
-          Serial.println("error opening fcntr.txt");
-        }
-        recordsInFileCounter = 1;
+        increaseFileCounter();
       }
       
       File dataFile = SD.open((String(deviceId)+String("_")+String(filesCounter) + String(".txt")).c_str(), FILE_WRITE);
@@ -201,6 +209,7 @@ void loop()
         Serial.println("error opening datalog.txt");
       }
     }
+  }
 
   if (millis() > 5000 && gps.charsProcessed() < 10)
   {
