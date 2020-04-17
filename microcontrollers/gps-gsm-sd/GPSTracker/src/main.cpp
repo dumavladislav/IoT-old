@@ -1,8 +1,9 @@
 #include <Arduino.h>
 
 #include "GPSTracker.h"
+#include "Constants/Constants.h"
 
-GPSTracker gpsTracker(5);
+GPSTracker gpsTracker(GPS_LOG_PERIOD_SEC);
 
 void setup()
 {

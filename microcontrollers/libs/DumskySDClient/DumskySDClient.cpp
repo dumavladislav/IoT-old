@@ -70,8 +70,8 @@ void Dumsky::SDClient::writeLogString(String logString) {
     recordsCounter++;
     recordsInFileCounter++;
 
-    Serial.print("WRITELOGSTRING: ");
-    Serial.println(logString);
+    // Serial.print("WRITELOGSTRING: ");
+    // Serial.println(logString);
 
     if(recordsInFileCounter > maxRecordsInFile) {
         filesCounter++;

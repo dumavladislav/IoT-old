@@ -18,24 +18,22 @@ void GPSClient::init() {
     //ss(RXPin, TXPin);
     ss = new SoftwareSerial(RXPin, TXPin);
     ss->begin(GPSBaud);
+    gpsStartTime = millis();
 }
 
 GpsData GPSClient::readGpsData() {
   
   GpsData gpsData;
-  Serial.println("Reading GPS Data");
+  // Serial.println("Reading GPS Data");
   // This sketch displays information every time a new sentence is correctly encoded.
-  if (ss->available())
+
+  while (ss->available())
   {
-    if (this->gps.encode(ss->read()))
+    if (gps.encode(ss->read()))
     {
-      Serial.print("IS GPS LOCATION VALID: ");
-      Serial.println(gps.location.isValid());
       if (gps.location.isValid())
       {
-        gpsData.gpsDataValid = true;
-        Serial.print("GPS LAT: ");
-        Serial.println(gps.location.lat());
+        gpsData.gpsDataValid = gps.location.isValid();
         gpsData.lat =  gps.location.lat();
         gpsData.lng =  gps.location.lng();
         if (gps.date.isValid())
@@ -57,28 +55,28 @@ GpsData GPSClient::readGpsData() {
         }
       
       }
-      return gpsData;
     }
   }
-  if (millis() > 5000 && gps.charsProcessed() < 10)
+
+  if (millis() > 15000 && gps.charsProcessed() < 10)
   {
     Serial.println(F("No GPS detected: check wiring."));
     while(true);
-  }  
+  } 
+
   return gpsData;
 }
 
 
 String GpsData::toString() {
   String logString = "";
-  logString += String(millis());
-  logString += String(",");
-  if (gpsDataValid)
+
+  if (lat != 0 && lng != 0 && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180)
   {
-    Serial.print("LAT: ");
-    Serial.println(lat);
-    Serial.print("LNG: ");
-    Serial.println(lng);
+    
+    logString += String(millis());
+    logString += String(",");
+  
     logString += String(lat, 6) + String(",") + String(lng, 6);
 
     logString += String(F(","));
@@ -111,7 +109,6 @@ String GpsData::toString() {
   
   }
 
-  Serial.println(logString);
   return logString;
 }
 

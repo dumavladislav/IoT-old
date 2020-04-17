@@ -1,5 +1,7 @@
 
 #include "MQTTClient.h"
+#include <time.h>
+
 
 MQTTClient::MQTTClient(char *devId, char *mqttServer, int mqttPort, Client* networkClient)
 {
@@ -14,6 +16,13 @@ void MQTTClient::connect(char *mqttUsr, char *mqttPasswd)
     mqttConnect(mqttUsr, mqttPasswd);
 }
 
+void MQTTClient::authorizationRequest(AuthorizationBlock authorizationBlock) {
+    MessageBuilder messageBuilder(authorizationBlock);
+    messageBuilder.addElement("requestType", "authorization");
+    sendMessage(AUTHORIZATION_REQUESTS_TPC, messageBuilder.generateJson());
+    subscribe(AUTHORIZATION_REQUESTS_STATUS_TPC);   
+} 
+
 
 
 void MQTTClient::mqttConnect(char *mqttUsr, char *mqttPasswd)
@@ -23,22 +32,22 @@ void MQTTClient::mqttConnect(char *mqttUsr, char *mqttPasswd)
     while (!client.connected())
     {
         Serial.println("Not Connected...");
-        time_t now = time(0);
+        unsigned long now = millis();
         // convert now to string form
-        char *dt = ctime(&now);
+        // char *dt = ctime(&now);
 
-        Serial.println("==========================================");
-        Serial.println(deviceId);
-        Serial.println(String(random(0xffff), HEX).c_str());
-        Serial.println(dt);
-        Serial.println("==========================================");
+        // Serial.println("==========================================");
+         Serial.println(deviceId);
+        // Serial.println(String(random(0xffff), HEX).c_str());
+        // Serial.println(dt);
+        // Serial.println("==========================================");
         //snprintf(deviceSessionId, 50, "%s_%s", deviceId, String(random(0xffff), HEX).c_str());
-        //deviceSessionId = (char *)((String)deviceId + String(random(0xffff), HEX)).c_str();
-        deviceSessionId = (char*) ( String("sdfsdf") + String("_444") ).c_str(); 
+        deviceSessionId = (char *)String(String(deviceId) + String(random(0xffff), HEX) + String(millis())).c_str();
+        //deviceSessionId = (char*) ( String("sdfsdf") + String("_444") ).c_str(); 
         Serial.println(deviceSessionId);
         Serial.print("Attempting MQTT connection...");
         // Attempt to connect
-        if (!client.connect("QQQ", mqttUsr, mqttPasswd))
+        if (!client.connect(deviceSessionId, mqttUsr, mqttPasswd))
         {
             Serial.print("failed, rc=");
             Serial.print(client.state());

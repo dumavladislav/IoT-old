@@ -1,11 +1,16 @@
 #include "GSMConnect.h"
 
 Dumsky::GSMConnect::GSMConnect() {
-    SoftwareSerial SerialAT(2, 3); // RX, TX
+    SerialAT.begin(9600);
 }
 
-void Dumsky::GSMConnect::init() {
-    modem = new TinyGsm(Serial);
+void Dumsky::GSMConnect::init(char* apn, char* gprsUser, char* gprsPass) {
+
+    this->apn = apn;
+    this->gprsUser = gprsUser;
+    this->gprsPass = gprsPass;
+
+    modem = new TinyGsm(SerialAT);
     SerialMon.println("Initializing modem->..");
     modem->restart();
     // modem->init();

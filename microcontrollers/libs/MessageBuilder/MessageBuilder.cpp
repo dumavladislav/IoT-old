@@ -1,7 +1,11 @@
+
+
+#pragma once
 #include "MessageBuilder.h"
 #include <ArduinoJson.h>
-#include <iostream>
-#include <unordered_map>
+// #include <iostream>
+// #include <unordered_map>
+//#include <map>
 #include <AuthorizationBlock.h>
 
 MessageBuilder::MessageBuilder(AuthorizationBlock authorizationBlock) {
