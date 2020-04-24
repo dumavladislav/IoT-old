@@ -3,7 +3,7 @@
 #define DUMP_AT_COMMANDS
 #define SerialMon Serial
 
-// #define TINY_GSM_DEBUG SerialMon
+#define TINY_GSM_DEBUG SerialMon
 
 #define GSM_AUTOBAUD_MIN 9600
 #define GSM_AUTOBAUD_MAX 115200
@@ -35,14 +35,6 @@ public:
     TinyGsmClient* getClient();
 
 private:
-
-    
-
-    // Your GPRS credentials, if any
-    char* apn = "YourAPN";
-    char* gprsUser = "";
-    char* gprsPass = "";
-
     SoftwareSerial SerialAT = SoftwareSerial(8, 9); // RX, TX
 
     TinyGsm* modem;

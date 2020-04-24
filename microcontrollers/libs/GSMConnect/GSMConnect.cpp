@@ -6,23 +6,17 @@ Dumsky::GSMConnect::GSMConnect() {
 
 void Dumsky::GSMConnect::init(char* apn, char* gprsUser, char* gprsPass) {
 
-    this->apn = apn;
-    this->gprsUser = gprsUser;
-    this->gprsPass = gprsPass;
-
     modem = new TinyGsm(SerialAT);
     SerialMon.println("Initializing modem->..");
     modem->restart();
-    // modem->init();
 
-    String modemInfo = modem->getModemInfo();
     SerialMon.print("Modem Info: ");
-    SerialMon.println(modemInfo);
+    SerialMon.println(modem->getModemInfo());
 
     modem->gprsConnect(apn, gprsUser, gprsPass);
 
     SerialMon.print("Waiting for network...");
-    if (!modem->waitForNetwork()) {
+    if (!modem->waitForNetwork(1000000L)) {
         SerialMon.println(" fail");
         delay(10000);
         return;

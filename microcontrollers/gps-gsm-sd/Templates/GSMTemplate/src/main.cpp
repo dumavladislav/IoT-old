@@ -8,7 +8,11 @@ void setup() {
   SIM800.begin(9600);               // Скорость обмена данными с модемом
   SIM800.println("AT");
   SIM800.println("AT+CMGF=1");
-  SIM800.println("AT+CMGS=\"+79653650849\"");
+  SIM800.println("AT+CSQ");
+  SIM800.println("AT+GMR");
+  //SIM800.println("AT+CMGS=\"+79653650849\"");
+  //SIM800.println("AT+COPS=?");
+  
 }
 
 void loop() {

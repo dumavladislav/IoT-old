@@ -1,8 +1,12 @@
 package org.dumskyhome.authorizationservice.Mqtt;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.dumskyhome.authorizationservice.Json.JsonMqttMessageHeader;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,5 +69,19 @@ public class MqttAgent {
         }
         return false;
     }
+
+    public void sendMessage(String topic, String messageString) {
+        MqttMessage mqttMessage = new MqttMessage();
+        mqttMessage.setPayload(messageString.getBytes());
+        try {
+            mqttClient.publish(topic, mqttMessage);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
 
 }

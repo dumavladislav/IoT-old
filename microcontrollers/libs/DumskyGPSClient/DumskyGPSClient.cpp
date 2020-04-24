@@ -1,13 +1,9 @@
-#include <Arduino.h>
+// #include <Arduino.h>
 #include "DumskyGPSClient.h"
 
 GPSClient::GPSClient() {
 }
 
-GPSClient::~GPSClient() {
-  Serial.print("DESTRUCTOR: ");
-  Serial.println("GPSClient");
-}
 
 void GPSClient::init() {
     Serial.println(F("A simple demonstration of TinyGPS++ with an attached GPS module"));
@@ -15,10 +11,8 @@ void GPSClient::init() {
     Serial.println(F("by Mikal Hart"));
     Serial.println();
 
-    //ss(RXPin, TXPin);
-    ss = new SoftwareSerial(RXPin, TXPin);
-    ss->begin(GPSBaud);
-    gpsStartTime = millis();
+    ss = new SoftwareSerial(4, 3);
+    ss->begin(9600);
 }
 
 GpsData GPSClient::readGpsData() {

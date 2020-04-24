@@ -41,6 +41,11 @@ public class AuthorizationServiceDao {
         registrationRequestsRepository.save(registrationRequest);
     }
 
+    public Device registerDevice(Device device) {
+        logger.info("Registering device: " + device.getMacAddress());
+        return devicesRepository.save(device);
+    }
+
     private DumskyHomeSession createSession(Device device) {
         logger.info("Creating session for device id: " + device.getId());
         return null;

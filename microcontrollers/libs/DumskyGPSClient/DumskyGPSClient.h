@@ -25,18 +25,10 @@ class GPSClient {
 public:
 
     GPSClient();
-    ~GPSClient();
     void init();
     GpsData readGpsData();
 
 private:
-
-    
-
-    static const int RXPin = 4, TXPin = 3;
-    static const uint32_t GPSBaud = 9600;
-
-    unsigned long gpsStartTime = 0;
 
     // The TinyGPS++ object
     TinyGPSPlus gps;

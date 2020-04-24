@@ -1,6 +1,7 @@
 
+#pragma once
 #include "MQTTClient.h"
-#include <time.h>
+#include <JsonMessageBuilder.h>
 
 
 MQTTClient::MQTTClient(char *devId, char *mqttServer, int mqttPort, Client* networkClient)
@@ -16,11 +17,10 @@ void MQTTClient::connect(char *mqttUsr, char *mqttPasswd)
     mqttConnect(mqttUsr, mqttPasswd);
 }
 
-void MQTTClient::authorizationRequest(AuthorizationBlock authorizationBlock) {
-    MessageBuilder messageBuilder(authorizationBlock);
-    messageBuilder.addElement("requestType", "authorization");
-    sendMessage(AUTHORIZATION_REQUESTS_TPC, messageBuilder.generateJson());
-    subscribe(AUTHORIZATION_REQUESTS_STATUS_TPC);   
+void MQTTClient::authorizationRequest() {
+    //JsonObject data;
+    sendJsonMessage(AUTHORIZATION_REQUESTS_TPC, data);
+    // subscribe(AUTHORIZATION_REQUESTS_STATUS_TPC);   
 } 
 
 
@@ -77,6 +77,19 @@ void MQTTClient::setCallback(MQTT_CALLBACK_SIGNATURE)
 void MQTTClient::sendMessage(char *topicName, String message)
 {
     if(!client.publish(topicName, message.c_str())) Serial.println("Message NOT published");
+}
+
+void MQTTClient::sendJsonMessage(char *topicName, JsonObject json) {
+    JsonMessageBuilder jsonMessageBuilder(authorizationBlock);
+    Serial.println(111);
+    jsonMessageBuilder.addElement("obj", "value1");
+    Serial.println(222);
+    // JsonObject nestObj;
+    // nestObj["qqq"] = 111;
+    // nestObj["ppp"] = "qwerty";
+    // jsonMessageBuilder.addObject("nestedObj", nestObj);
+    Serial.println(jsonMessageBuilder.toString());
+    sendMessage(AUTHORIZATION_REQUESTS_TPC, jsonMessageBuilder.toString());
 }
 
 

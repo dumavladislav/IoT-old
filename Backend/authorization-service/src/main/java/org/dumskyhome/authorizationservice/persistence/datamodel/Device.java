@@ -13,6 +13,8 @@ public class Device extends AuditModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    private Long chipId;
+
     @NotNull
     private String macAddress;
 
@@ -23,9 +25,10 @@ public class Device extends AuditModel {
 
     public Device() {}
 
-    public Device(String macAddress, String ipAddress) {
+    public Device(String macAddress, String ipAddress, Long chipId) {
         this.setMacAddress(macAddress);
         this.setIpAddress(ipAddress);
+        this.setChipId(chipId);
     }
 
 
@@ -59,5 +62,13 @@ public class Device extends AuditModel {
 
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
+    }
+
+    public Long getChipId() {
+        return chipId;
+    }
+
+    public void setChipId(Long chipId) {
+        this.chipId = chipId;
     }
 }

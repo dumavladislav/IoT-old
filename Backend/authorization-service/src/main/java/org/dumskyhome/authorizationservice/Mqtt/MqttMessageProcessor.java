@@ -2,9 +2,7 @@ package org.dumskyhome.authorizationservice.Mqtt;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.dumskyhome.authorizationservice.Json.JsonAuthorisationRequestMessage;
-import org.dumskyhome.authorizationservice.Json.JsonMqttMessage;
-import org.dumskyhome.authorizationservice.Json.JsonMqttMessageHeader;
+import org.dumskyhome.authorizationservice.Json.*;
 import org.dumskyhome.authorizationservice.service.AuthorizationService;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -33,6 +31,8 @@ public class MqttMessageProcessor implements MqttCallback {
         objectMapper = new ObjectMapper();
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+        objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
+        objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
     }
 
     @Autowired
@@ -52,11 +52,17 @@ public class MqttMessageProcessor implements MqttCallback {
 
         logger.info("TOPIC:"+ s + " || MESSAGE RECEIVED: " + mqttMessage.toString());
         if (s.equals(env.getProperty("mqtt.topic.authorizationRequests"))) {
+            logger.info("Authorization request received. Parsing the request....");
             JsonAuthorisationRequestMessage mqttMessageJson = objectMapper.readValue(mqttMessage.toString(), JsonAuthorisationRequestMessage.class);
 
             logger.info(mqttMessageJson.getData().getRequestType());
-            authorizationService.checkAuthorization(mqttMessageJson.getHeader().getMacAddress()).<ResponseEntity>thenApply(ResponseEntity::ok);
+            authorizationService.checkAuthorization(mqttMessageJson.getHeader()).<ResponseEntity>thenApply(ResponseEntity::ok);
 
+        }
+
+        if (s.equals(env.getProperty("mqtt.topic.registrationResponses"))) {
+            JsonRegistrationResponseMessage message = objectMapper.readValue(mqttMessage.toString(), JsonRegistrationResponseMessage.class);
+            authorizationService.finalizeRegistration(message);
         }
     }
 

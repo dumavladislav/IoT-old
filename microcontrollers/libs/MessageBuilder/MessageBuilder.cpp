@@ -13,6 +13,9 @@ MessageBuilder::MessageBuilder(AuthorizationBlock authorizationBlock) {
 }
 
 void MessageBuilder::addElement(String key, String value) {
+  
+
+
   hashmap[key.c_str()] = value.c_str();
 }
 
@@ -20,7 +23,7 @@ String MessageBuilder::generateJson() {
     
     const size_t jsonSize = JSON_OBJECT_SIZE(hashmap.size()) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(4) + 30*(hashmap.size()+10);
     DynamicJsonDocument jsonDoc(jsonSize);
-    
+
     // HEADER
 
     float startTimeOnOperationMode = millis();

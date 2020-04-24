@@ -1,8 +1,8 @@
 
-#include <DumskySDClient.h>
+//#include <DumskySDClient.h>
 #include <DumskyGPSClient.h>
-// #include <GSMConnect.h>
-// #include <MQTTClient.h>
+#include <GSMConnect.h>
+#include <MQTTClient.h>
 
 class GPSTracker {
 
@@ -15,7 +15,7 @@ public:
 
 private:
     GPSClient gpsClient;
-    Dumsky::SDClient sdClient;
+    //Dumsky::SDClient sdClient;
 
     unsigned long lastGpsScanTime = 0;
     int gpsScanPeriod;
@@ -23,8 +23,8 @@ private:
     GpsData prevGpsData;
     unsigned long coordCounter = 0;
 
-    // Dumsky::GSMConnect gsmConnect;
-    // MQTTClient* mqttClient;
+    Dumsky::GSMConnect gsmConnect;
+    MQTTClient* mqttClient;
 };
 
 
