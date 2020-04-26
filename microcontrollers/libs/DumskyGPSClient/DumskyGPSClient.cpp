@@ -5,17 +5,24 @@ GPSClient::GPSClient() {
 }
 
 
-void GPSClient::init() {
-    Serial.println(F("A simple demonstration of TinyGPS++ with an attached GPS module"));
-    Serial.print(F("Testing TinyGPS++ library v. ")); Serial.println(TinyGPSPlus::libraryVersion());
-    Serial.println(F("by Mikal Hart"));
-    Serial.println();
+void GPSClient::init(uint8_t rx, uint8_t tx) {
+    // Serial.println(F("A simple demonstration of TinyGPS++ with an attached GPS module"));
+    // Serial.print(F("Testing TinyGPS++ library v. ")); Serial.println(TinyGPSPlus::libraryVersion());
+    // Serial.println(F("by Mikal Hart"));
+    // Serial.println();
 
-    ss = new SoftwareSerial(4, 3);
+    ss = new SoftwareSerial(rx, tx);
     ss->begin(9600);
+    startTime = millis();
+}
+
+void GPSClient::forceListen() {
+    ss->listen();
 }
 
 GpsData GPSClient::readGpsData() {
+
+  forceListen();
   
   GpsData gpsData;
   // Serial.println("Reading GPS Data");
@@ -52,9 +59,9 @@ GpsData GPSClient::readGpsData() {
     }
   }
 
-  if (millis() > 15000 && gps.charsProcessed() < 10)
+  if ((millis() - startTime) > 15000 && gps.charsProcessed() < 10)
   {
-    Serial.println(F("No GPS detected: check wiring."));
+    // Serial.println(F("No GPS detected: check wiring."));
     while(true);
   } 
 
@@ -104,5 +111,10 @@ String GpsData::toString() {
   }
 
   return logString;
+}
+
+uint32 GPSClient::getNumberOfSatellites() {
+  //TinyGPSCustom satsInView(gps, "GPGSV", 3);
+  return gps.satellites.value();
 }
 

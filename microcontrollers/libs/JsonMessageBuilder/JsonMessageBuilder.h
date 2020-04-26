@@ -12,7 +12,7 @@ public:
     String toString();
 
 private:
-    DynamicJsonDocument jsonDoc = DynamicJsonDocument(2*JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(5));
+    DynamicJsonDocument jsonDoc = DynamicJsonDocument(1024);
     JsonObject header;
     JsonObject data;
 

@@ -1,9 +1,14 @@
 #define TINY_GSM_MODEM_SIM800
+
+#if !defined(TINY_GSM_RX_BUFFER)
+#define TINY_GSM_RX_BUFFER 650
+#endif
+
 #define TINY_GSM_USE_GPRS true
-#define DUMP_AT_COMMANDS
+// #define DUMP_AT_COMMANDS
 #define SerialMon Serial
 
-#define TINY_GSM_DEBUG SerialMon
+// #define TINY_GSM_DEBUG SerialMon
 
 #define GSM_AUTOBAUD_MIN 9600
 #define GSM_AUTOBAUD_MAX 115200
@@ -25,21 +30,27 @@
 #include <SoftwareSerial.h>
 #include <TinyGsmClient.h>
 
-namespace Dumsky {
+//namespace Dumsky {
 
 class GSMConnect {
 
 public:
-    GSMConnect();
+    GSMConnect(int rx_port, int tx_port);
     void init(char* apn, char* gprsUser, char* gprsPass);
+    void forceListen();
     TinyGsmClient* getClient();
+    String getIMEI();
+    // IPAddress getIP();
 
 private:
-    SoftwareSerial SerialAT = SoftwareSerial(8, 9); // RX, TX
+//    int8_t rx;
+//    int8_t tx; 
+    // SoftwareSerial SerialAT = SoftwareSerial(8, 9); // RX, TX
+    SoftwareSerial SerialAT; // RX, TX
 
     TinyGsm* modem;
     TinyGsmClient* client;
 
 };
 
-}
+//}

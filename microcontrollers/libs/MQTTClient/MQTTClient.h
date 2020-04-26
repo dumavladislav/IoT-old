@@ -13,10 +13,11 @@ class MQTTClient
 public:
     MQTTClient(char *devId, char *mqttServer, int mqttPort, Client* networkClient);
     void    connect(char *mqttUsr, char *mqttPasswd);
+    boolean isConnected();
     void    authorizationRequest();
     void    keepAlive(char *mqttUsr, char *mqttPasswd);
     void    setCallback(MQTT_CALLBACK_SIGNATURE);
-    void    sendMessage(char *topicName, String message);
+    boolean    sendMessage(char *topicName, String message);
     void    sendJsonMessage(char *topicName, JsonObject json);
     void    subscribe(char *topicName);
 

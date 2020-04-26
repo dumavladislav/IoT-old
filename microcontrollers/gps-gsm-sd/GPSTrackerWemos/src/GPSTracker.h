@@ -12,9 +12,19 @@ public:
     GPSTracker(int gpsScanPeriod);
     void init();
     void readGpsData();
+    String getGpsDataJson(GpsData gpsData);
+    unsigned long getSentCounter();
+    uint8_t getStatus();
+    String getStatusStr();
+    String getGpsStatusStr();
+    String getGpsDataStr();
     
 
 private:
+
+    uint8_t status = 0;
+    AuthorizationBlock authorizationBlock;
+
     GPSClient gpsClient;
     // Dumsky::SDClient sdClient;
 
@@ -22,9 +32,11 @@ private:
     int gpsScanPeriod;
 
     GpsData prevGpsData;
+//    GpsData lastSuccessfulGpsData;
     unsigned long coordCounter = 0;
+    unsigned long coordSentCounter = 0;
 
-    Dumsky::GSMConnect gsmConnect(GSM_RXQ_PIN, GSM_TXQ_PIN);
+    GSMConnect gsmConnect{GSM_RX_PIN, GSM_TX_PIN};
     MQTTClient* mqttClient;
 };
 

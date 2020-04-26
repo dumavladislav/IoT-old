@@ -1,0 +1,7 @@
+# Copy files to server
+scp -r /c/dumavla/GitHub/IoT/Backend/gps-agent/* dumavla@192.168.1.53:~/gps-agent
+
+
+#docker build
+sudo docker build .
+sudo docker run --name gps-agent-rev1  --restart unless-stopped -it -d 08c09b39c199

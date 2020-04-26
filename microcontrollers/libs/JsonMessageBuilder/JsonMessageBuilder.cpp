@@ -25,21 +25,27 @@ JsonMessageBuilder::JsonMessageBuilder(AuthorizationBlock authorizationBlock) {
     //JsonObject root = jsonDoc->to<JsonObject>();
 
     data = jsonDoc.createNestedObject("data");
-    data["qwe11"] = 222;
+    //data["qwe11"] = 222;
 
     String jsonSerialized;
     serializeJson(jsonDoc, jsonSerialized);
-    Serial.println(jsonSerialized);
+    // Serial.println(jsonSerialized);
 }
 
 void JsonMessageBuilder::addElement(String elementName, String elementValue) {
-    Serial.println("Adding Element");
-    data["qwe"] = 111;
-    Serial.println("Element Added");
+    data[elementName] = elementValue;
 }
 
 void JsonMessageBuilder::addObject(String objectName, JsonObject jsonObject) {
-    data[objectName] = jsonObject;
+    JsonObject newObj = data.createNestedObject(objectName);
+    for (JsonObject::iterator it=jsonObject.begin(); it!=jsonObject.end(); ++it)
+    {
+        // Serial.print(it->key().c_str());
+        // Serial.print(" = ");
+        // Serial.println(it->value().as<char*>());
+        newObj[it->key().c_str()] = it->value().as<char*>();
+    }
+    // newObj = jsonObject;
 }
 
 void JsonMessageBuilder::addArrayOfObjects(String arrayName, JsonObject jsonObjects[]) {

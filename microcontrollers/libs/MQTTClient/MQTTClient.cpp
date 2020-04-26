@@ -17,6 +17,10 @@ void MQTTClient::connect(char *mqttUsr, char *mqttPasswd)
     mqttConnect(mqttUsr, mqttPasswd);
 }
 
+boolean MQTTClient::isConnected() {
+    return client.connected();
+}
+
 void MQTTClient::authorizationRequest() {
     //JsonObject data;
     sendJsonMessage(AUTHORIZATION_REQUESTS_TPC, data);
@@ -74,9 +78,14 @@ void MQTTClient::setCallback(MQTT_CALLBACK_SIGNATURE)
     client.setCallback(callback);
 }
 
-void MQTTClient::sendMessage(char *topicName, String message)
+boolean MQTTClient::sendMessage(char *topicName, String message)
 {
-    if(!client.publish(topicName, message.c_str())) Serial.println("Message NOT published");
+    if(!client.publish(topicName, message.c_str())) 
+    {
+        Serial.println("Message NOT published");
+        return false;
+    }
+    return true;
 }
 
 void MQTTClient::sendJsonMessage(char *topicName, JsonObject json) {
@@ -96,3 +105,5 @@ void MQTTClient::sendJsonMessage(char *topicName, JsonObject json) {
 void MQTTClient::subscribe(char* topicName) {
     client.subscribe(topicName);
 }
+
+

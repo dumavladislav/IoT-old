@@ -12,7 +12,7 @@ void GPSTracker::init() {
     mqttClient = new MQTTClient((char*)"1111", MQTT_SERVER, MQTT_PORT, (Client*) gsmConnect.getClient());
     //mqttClient->connect(MQTT_USER, MQTT_PSSWD);
     mqttClient->authorizationRequest();
-    gpsClient.init();
+    gpsClient.init(GPS_RXQ_PIN, GPS_TXQ_PIN);
 }
 
 void GPSTracker::readGpsData() {
