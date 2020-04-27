@@ -4,8 +4,8 @@
 
 #define GPS_LOG_PERIOD_SEC 3
 
-#define GPS_RX_PIN D7
-#define GPS_TX_PIN D6
+#define GPS_RX_PIN RX //D7
+#define GPS_TX_PIN TX //D6
 #define GSM_RX_PIN D5
 #define GSM_TX_PIN D0
 

@@ -11,26 +11,26 @@ void GPSClient::init(uint8_t rx, uint8_t tx) {
     // Serial.println(F("by Mikal Hart"));
     // Serial.println();
 
-    ss = new SoftwareSerial(rx, tx);
-    ss->begin(9600);
+    // ss = new SoftwareSerial(rx, tx);
+    // Serial.begin(9600);
     startTime = millis();
 }
 
 void GPSClient::forceListen() {
-    ss->listen();
+    //Serial.listen();
 }
 
 GpsData GPSClient::readGpsData() {
 
-  forceListen();
+  // forceListen();
   
   GpsData gpsData;
   // Serial.println("Reading GPS Data");
   // This sketch displays information every time a new sentence is correctly encoded.
 
-  while (ss->available())
+  while (Serial.available())
   {
-    if (gps.encode(ss->read()))
+    if (gps.encode(Serial.read()))
     {
       if (gps.location.isValid())
       {
