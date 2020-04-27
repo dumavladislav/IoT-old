@@ -31,11 +31,11 @@ void MQTTClient::authorizationRequest() {
 
 void MQTTClient::mqttConnect(char *mqttUsr, char *mqttPasswd)
 {
-    Serial.print("Start MQTT Connect...");
+    // Serial.print("Start MQTT Connect...");
     // Loop until we're reconnected
     while (!client.connected())
     {
-        Serial.println("Not Connected...");
+        // Serial.println("Not Connected...");
         unsigned long now = millis();
         // convert now to string form
         // char *dt = ctime(&now);
@@ -49,13 +49,13 @@ void MQTTClient::mqttConnect(char *mqttUsr, char *mqttPasswd)
         deviceSessionId = (char *)String(String(deviceId) + String(random(0xffff), HEX) + String(millis())).c_str();
         //deviceSessionId = (char*) ( String("sdfsdf") + String("_444") ).c_str(); 
         Serial.println(deviceSessionId);
-        Serial.print("Attempting MQTT connection...");
+        // Serial.print("Attempting MQTT connection...");
         // Attempt to connect
         if (!client.connect(deviceSessionId, mqttUsr, mqttPasswd))
         {
-            Serial.print("failed, rc=");
+            // Serial.print("failed, rc=");
             Serial.print(client.state());
-            Serial.println(" try again in 5 seconds");
+            // Serial.println(" try again in 5 seconds");
             // Wait 5 seconds before retrying
             delay(5000);
         }
@@ -82,7 +82,7 @@ boolean MQTTClient::sendMessage(char *topicName, String message)
 {
     if(!client.publish(topicName, message.c_str())) 
     {
-        Serial.println("Message NOT published");
+        // Serial.println("Message NOT published");
         return false;
     }
     return true;

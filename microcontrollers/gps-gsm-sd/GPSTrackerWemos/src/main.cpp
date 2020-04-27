@@ -25,8 +25,8 @@ void showStatus() {
 
 void setup()
 {
-  Serial.begin(9600);
-  while(!Serial) ;
+  //Serial.begin(9600);
+  //while(!Serial) ;
   u8g2.begin();
   showStatus();
   gpsTracker.init();

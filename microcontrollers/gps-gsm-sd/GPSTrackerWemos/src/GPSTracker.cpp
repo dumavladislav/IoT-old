@@ -6,6 +6,7 @@ GPSTracker::GPSTracker(int gpsScanPeriod) {
     this->gpsScanPeriod = gpsScanPeriod;
     authorizationBlock.deviceId = DEVICE_ID;
     authorizationBlock.chipId = ESP.getChipId();
+    gpsClient = new GPSClient(new SoftwareSerial(GPS_RX_PIN, GPS_TX_PIN));
 }
 
 void GPSTracker::init() {
@@ -16,7 +17,7 @@ void GPSTracker::init() {
     mqttClient = new MQTTClient((char*)authorizationBlock.deviceId.c_str(), MQTT_SERVER, MQTT_PORT, (Client*) gsmConnect.getClient());
     mqttClient->keepAlive(MQTT_USER, MQTT_PSSWD);
     // mqttClient->authorizationRequest();
-    gpsClient.init(GPS_RX_PIN, GPS_TX_PIN);
+    gpsClient->init(/*GPS_RX_PIN, GPS_TX_PIN*/);
     status = 1;
 }
 
@@ -26,7 +27,7 @@ uint8_t GPSTracker::getStatus() {
 
 
 void GPSTracker::readGpsData() {
-    GpsData gpsData = gpsClient.readGpsData();
+    GpsData gpsData = gpsClient->readGpsData();
     // gsmConnect.forceListen();
     mqttClient->keepAlive(MQTT_USER, MQTT_PSSWD);
     if (((millis() - lastGpsScanTime) > (gpsScanPeriod*1000)) && gpsData.lat > 10 && gpsData.lng > 10) {
@@ -45,7 +46,6 @@ void GPSTracker::readGpsData() {
             || coordCounter < 5
         ) 
         ) {
-            //Serial.println(gpsData.toString());
             if(mqttClient->sendMessage(GPS_TPC, getGpsDataJson(gpsData))) coordSentCounter++;
             prevGpsData = gpsData;
             coordCounter++;
@@ -82,7 +82,7 @@ String GPSTracker::getStatusStr() {
 
 String GPSTracker::getGpsStatusStr() {
     String status = "Sats: ";
-    status += gpsClient.getNumberOfSatellites();
+    status += gpsClient->getNumberOfSatellites();
     status += " | " + String(lastGpsScanTime/1000) + " : " + String(millis()/1000);
     return status;
 }

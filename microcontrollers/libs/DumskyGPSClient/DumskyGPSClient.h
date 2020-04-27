@@ -24,13 +24,16 @@ class GPSClient {
 
 public:
 
-    GPSClient();
-    void init(uint8_t rx, uint8_t tx);
+    GPSClient(SoftwareSerial* serialStream);
+    void init(/*uint8_t rx, uint8_t tx*/);
     void forceListen();
     GpsData readGpsData();
     uint32 getNumberOfSatellites();
 
 private:
+
+    //Stream* serialStream;
+    SoftwareSerial* serialStream;
 
     unsigned long startTime = 0;
 

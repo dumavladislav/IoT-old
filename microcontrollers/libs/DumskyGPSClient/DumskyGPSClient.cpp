@@ -1,36 +1,35 @@
 // #include <Arduino.h>
 #include "DumskyGPSClient.h"
 
-GPSClient::GPSClient() {
+GPSClient::GPSClient(SoftwareSerial* serialStream) {
+  this->serialStream = serialStream;
 }
 
 
-void GPSClient::init(uint8_t rx, uint8_t tx) {
-    // Serial.println(F("A simple demonstration of TinyGPS++ with an attached GPS module"));
-    // Serial.print(F("Testing TinyGPS++ library v. ")); Serial.println(TinyGPSPlus::libraryVersion());
-    // Serial.println(F("by Mikal Hart"));
-    // Serial.println();
+void GPSClient::init(/*uint8_t rx, uint8_t tx*/) {
+    // serialStream->println(F("A simple demonstration of TinyGPS++ with an attached GPS module"));
+    // serialStream->print(F("Testing TinyGPS++ library v. ")); serialStream->println(TinyGPSPlus::libraryVersion());
+    // serialStream->println(F("by Mikal Hart"));
+    // serialStream->println();
 
     // ss = new SoftwareSerial(rx, tx);
-    // Serial.begin(9600);
+    serialStream->begin(9600);
     startTime = millis();
 }
 
 void GPSClient::forceListen() {
-    //Serial.listen();
+    //serialStream->listen();
 }
 
 GpsData GPSClient::readGpsData() {
-
-  // forceListen();
-  
+ 
   GpsData gpsData;
   // Serial.println("Reading GPS Data");
   // This sketch displays information every time a new sentence is correctly encoded.
 
-  while (Serial.available())
+  while (serialStream->available())
   {
-    if (gps.encode(Serial.read()))
+    if (gps.encode(serialStream->read()))
     {
       if (gps.location.isValid())
       {
@@ -58,13 +57,13 @@ GpsData GPSClient::readGpsData() {
       }
     }
   }
+  
 
   if ((millis() - startTime) > 15000 && gps.charsProcessed() < 10)
   {
-    // Serial.println(F("No GPS detected: check wiring."));
-    while(true);
+    // serialStream->println(F("No GPS detected: check wiring."));
+    // while(true);
   } 
-
   return gpsData;
 }
 
@@ -94,13 +93,13 @@ String GpsData::toString() {
     logString += String(F(","));
     if (gpsTimeValid)
     {
-      if (gpsHour < 10) logString += String(F("0")); //Serial.print(F("0"));
+      if (gpsHour < 10) logString += String(F("0")); //serialStream->print(F("0"));
       logString += String(gpsHour) + String(F(":"));
-      if (gpsMinute < 10) logString += String(F("0")); // Serial.print(F("0"));
+      if (gpsMinute < 10) logString += String(F("0")); // serialStream->print(F("0"));
       logString += String(gpsMinute) + String(F(":"));
-      if (gpsSecond < 10) logString += String(F("0")); // Serial.print(F("0"));
+      if (gpsSecond < 10) logString += String(F("0")); // serialStream->print(F("0"));
       logString += String(gpsSecond) + String(F("."));
-      if (gpsCentisecond < 10) logString += String(F("0")); // Serial.print(F("0"));
+      if (gpsCentisecond < 10) logString += String(F("0")); // serialStream->print(F("0"));
       logString += String(gpsCentisecond);
     }
     else

@@ -25,7 +25,7 @@ private:
     uint8_t status = 0;
     AuthorizationBlock authorizationBlock;
 
-    GPSClient gpsClient;
+    GPSClient* gpsClient;
     // Dumsky::SDClient sdClient;
 
     unsigned long lastGpsScanTime = 0;
