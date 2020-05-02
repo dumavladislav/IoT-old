@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 #include <SoftwareSerial.h>
-SoftwareSerial SIM800(8, 9);        // 8 - RX Arduino (TX SIM800L), 9 - TX Arduino (RX SIM800L)
+SoftwareSerial SIM800(D5, D0);        // 8 - RX Arduino (TX SIM800L), 9 - TX Arduino (RX SIM800L)
 void setup() {
   Serial.begin(9600);               // Скорость обмена данными с компьютером
   Serial.println("Start!");

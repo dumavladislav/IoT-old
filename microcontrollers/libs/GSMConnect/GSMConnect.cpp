@@ -5,9 +5,14 @@ GSMConnect::GSMConnect(int rx_port, int tx_port) {
     delay(3000);  
 }
 
-void GSMConnect::init(char* apn, char* gprsUser, char* gprsPass) {
-    forceListen();
+void GSMConnect::init() {
     modem = new TinyGsm(SerialAT);
+}
+
+int8_t GSMConnect::connect(char* apn, char* gprsUser, char* gprsPass) {
+    // forceListen();
+    
+    // modem = new TinyGsm(SerialAT);
     //SerialMon.println("Initializing modem->..");
     modem->restart();
 
@@ -23,13 +28,13 @@ void GSMConnect::init(char* apn, char* gprsUser, char* gprsPass) {
 
     modem->gprsConnect(apn, gprsUser, gprsPass);
 
-    //SerialMon.print("Waiting for network...");
+    // SerialMon.print("Waiting for network...");
     if (!modem->waitForNetwork(1000000L)) {
     //    SerialMon.println(" fail");
         delay(10000);
-        return;
+        return -1;
     }
-    //SerialMon.println(" success");
+    // SerialMon.println(" success");
 
     // if (modem->isNetworkConnected()) {
     //     SerialMon.println("Network connected");
@@ -39,9 +44,9 @@ void GSMConnect::init(char* apn, char* gprsUser, char* gprsPass) {
     // SerialMon.print(F("Connecting to "));
     // SerialMon.print(apn);
     if (!modem->gprsConnect(apn, gprsUser, gprsPass)) {
-    // SerialMon.println(" fail");
-    delay(10000);
-    return;
+        // SerialMon.println(" fail");
+        delay(10000);
+        return -2;
     }
     // SerialMon.println(" success");
 
@@ -50,6 +55,16 @@ void GSMConnect::init(char* apn, char* gprsUser, char* gprsPass) {
     // }
 
     client = new TinyGsmClient(*modem);
+    return 1;
+}
+
+boolean GSMConnect::keepAlive(char* apn, char* gprsUser, char* gprsPass) {
+    if(!modem->isGprsConnected()) {
+        // connect(apn, gprsUser, gprsPass);
+        modem->gprsConnect(apn, gprsUser, gprsPass);
+        delay(10000);
+    }
+    return modem->isGprsConnected();
 }
 
 TinyGsmClient* GSMConnect::getClient(){

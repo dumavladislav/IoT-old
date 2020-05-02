@@ -36,7 +36,9 @@ class GSMConnect {
 
 public:
     GSMConnect(int rx_port, int tx_port);
-    void init(char* apn, char* gprsUser, char* gprsPass);
+    void init();
+    int8_t connect(char* apn, char* gprsUser, char* gprsPass);
+    boolean keepAlive(char* apn, char* gprsUser, char* gprsPass);
     void forceListen();
     TinyGsmClient* getClient();
     String getIMEI();

@@ -41,14 +41,14 @@ void MQTTClient::mqttConnect(char *mqttUsr, char *mqttPasswd)
         // char *dt = ctime(&now);
 
         // Serial.println("==========================================");
-         Serial.println(deviceId);
+        // Serial.println(deviceId);
         // Serial.println(String(random(0xffff), HEX).c_str());
         // Serial.println(dt);
         // Serial.println("==========================================");
         //snprintf(deviceSessionId, 50, "%s_%s", deviceId, String(random(0xffff), HEX).c_str());
         deviceSessionId = (char *)String(String(deviceId) + String(random(0xffff), HEX) + String(millis())).c_str();
         //deviceSessionId = (char*) ( String("sdfsdf") + String("_444") ).c_str(); 
-        Serial.println(deviceSessionId);
+        // Serial.println(deviceSessionId);
         // Serial.print("Attempting MQTT connection...");
         // Attempt to connect
         if (!client.connect(deviceSessionId, mqttUsr, mqttPasswd))
@@ -97,7 +97,7 @@ void MQTTClient::sendJsonMessage(char *topicName, JsonObject json) {
     // nestObj["qqq"] = 111;
     // nestObj["ppp"] = "qwerty";
     // jsonMessageBuilder.addObject("nestedObj", nestObj);
-    Serial.println(jsonMessageBuilder.toString());
+    // Serial.println(jsonMessageBuilder.toString());
     sendMessage(AUTHORIZATION_REQUESTS_TPC, jsonMessageBuilder.toString());
 }
 

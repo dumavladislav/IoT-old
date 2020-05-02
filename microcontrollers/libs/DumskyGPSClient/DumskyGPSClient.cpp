@@ -1,7 +1,7 @@
 // #include <Arduino.h>
 #include "DumskyGPSClient.h"
 
-GPSClient::GPSClient(SoftwareSerial* serialStream) {
+GPSClient::GPSClient(Stream* serialStream) {
   this->serialStream = serialStream;
 }
 
@@ -13,7 +13,7 @@ void GPSClient::init(/*uint8_t rx, uint8_t tx*/) {
     // serialStream->println();
 
     // ss = new SoftwareSerial(rx, tx);
-    serialStream->begin(9600);
+    // serialStream->begin(9600);
     startTime = millis();
 }
 

@@ -3,6 +3,7 @@
 #include <DumskyGPSClient.h>
 #include <GSMConnect.h>
 #include <MQTTClient.h>
+#include <DumskyOLED.h>
 #include "Constants/Constants.h"
 
 class GPSTracker {
@@ -11,6 +12,8 @@ public:
 
     GPSTracker(int gpsScanPeriod);
     void init();
+    void keepAlive();
+    void gsmKeepAlive();
     void readGpsData();
     String getGpsDataJson(GpsData gpsData);
     unsigned long getSentCounter();
@@ -18,12 +21,17 @@ public:
     String getStatusStr();
     String getGpsStatusStr();
     String getGpsDataStr();
+    void showStatus();
     
 
 private:
 
+    DumskyOLED oled;
+
     uint8_t status = 0;
     AuthorizationBlock authorizationBlock;
+
+    SoftwareSerial* gpsSoftwareSerial;
 
     GPSClient* gpsClient;
     // Dumsky::SDClient sdClient;
