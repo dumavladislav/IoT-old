@@ -1,7 +1,7 @@
 #define TINY_GSM_MODEM_SIM800
 
 #if !defined(TINY_GSM_RX_BUFFER)
-#define TINY_GSM_RX_BUFFER 650
+#define TINY_GSM_RX_BUFFER 1024
 #endif
 
 #define TINY_GSM_USE_GPRS true
@@ -36,9 +36,11 @@ class GSMConnect {
 
 public:
     GSMConnect(int rx_port, int tx_port);
-    void init();
+    void init(Stream* serialStreamGSM);
     int8_t connect(char* apn, char* gprsUser, char* gprsPass);
     boolean keepAlive(char* apn, char* gprsUser, char* gprsPass);
+    boolean GSMConnected();
+    boolean GPRSConnected();
     void forceListen();
     TinyGsmClient* getClient();
     String getIMEI();
@@ -48,7 +50,8 @@ private:
 //    int8_t rx;
 //    int8_t tx; 
     // SoftwareSerial SerialAT = SoftwareSerial(8, 9); // RX, TX
-    SoftwareSerial SerialAT; // RX, TX
+    // SoftwareSerial SerialAT{5, 18}; // RX, TX
+    Stream* serialStreamGSM;
 
     TinyGsm* modem;
     TinyGsmClient* client;

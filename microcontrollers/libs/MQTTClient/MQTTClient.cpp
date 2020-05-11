@@ -4,12 +4,16 @@
 #include <JsonMessageBuilder.h>
 
 
-MQTTClient::MQTTClient(char *devId, char *mqttServer, int mqttPort, Client* networkClient)
+MQTTClient::MQTTClient(char *devId)
 {
     deviceId = devId;
 
-    client = PubSubClient(*networkClient);
-    client.setServer(mqttServer, mqttPort);
+
+}
+
+void MQTTClient::init(char *mqttServer, int mqttPort, Client* networkClient) {
+    client.setClient(*networkClient);
+    client.setServer(strdup(mqttServer), mqttPort);
 }
 
 void MQTTClient::connect(char *mqttUsr, char *mqttPasswd)
@@ -49,12 +53,14 @@ void MQTTClient::mqttConnect(char *mqttUsr, char *mqttPasswd)
         deviceSessionId = (char *)String(String(deviceId) + String(random(0xffff), HEX) + String(millis())).c_str();
         //deviceSessionId = (char*) ( String("sdfsdf") + String("_444") ).c_str(); 
         // Serial.println(deviceSessionId);
+        // Serial.println(mqttUsr);
+        // Serial.println(mqttPasswd);
         // Serial.print("Attempting MQTT connection...");
         // Attempt to connect
         if (!client.connect(deviceSessionId, mqttUsr, mqttPasswd))
         {
             // Serial.print("failed, rc=");
-            Serial.print(client.state());
+            // Serial.print(client.state());
             // Serial.println(" try again in 5 seconds");
             // Wait 5 seconds before retrying
             delay(5000);

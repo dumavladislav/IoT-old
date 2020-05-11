@@ -112,7 +112,7 @@ String GpsData::toString() {
   return logString;
 }
 
-uint32 GPSClient::getNumberOfSatellites() {
+uint32_t GPSClient::getNumberOfSatellites() {
   //TinyGPSCustom satsInView(gps, "GPGSV", 3);
   return gps.satellites.value();
 }

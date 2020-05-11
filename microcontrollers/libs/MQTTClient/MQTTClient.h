@@ -7,11 +7,14 @@
 #include <AuthorizationBlock.h>
 #include <ArduinoJson.h>
 
+//#define MQTT_SOCKET_TIMEOUT 60
+
 class MQTTClient
 {
 
 public:
-    MQTTClient(char *devId, char *mqttServer, int mqttPort, Client* networkClient);
+    MQTTClient(char *devId);
+    void init(char *mqttServer, int mqttPort, Client* networkClient);
     void    connect(char *mqttUsr, char *mqttPasswd);
     boolean isConnected();
     void    authorizationRequest();
