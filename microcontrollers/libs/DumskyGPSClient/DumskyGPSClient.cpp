@@ -108,7 +108,7 @@ String GpsData::toString() {
     }
   
   }
-
+  Serial.println(logString);
   return logString;
 }
 

@@ -1,5 +1,5 @@
 
-// #include <DumskySDClient.h>
+#include <DumskySDClient.h>
 #include <DumskyGPSClient.h>
 #include <GSMConnect.h>
 #include <MQTTClient.h>
@@ -38,7 +38,7 @@ private:
     GSMConnect gsmConnect{GSM_RX_PIN, GSM_TX_PIN};
     MQTTClient* mqttClient;
     GPSClient* gpsClient;
-    // Dumsky::SDClient sdClient;
+    Dumsky::SDClient sdClient;
 
     unsigned long lastGpsScanTime = 0;
     int gpsScanPeriod;

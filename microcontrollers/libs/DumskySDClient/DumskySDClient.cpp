@@ -8,7 +8,7 @@ Dumsky::SDClient::SDClient() {
 void Dumsky::SDClient::init() {
   Serial.print("Initializing SD card...");
 
-  if (!SD.begin(10)) {
+  if (!SD.begin(5)) {
     Serial.println("SD initialization failed!");
     while (1);
   }
@@ -16,9 +16,9 @@ void Dumsky::SDClient::init() {
 
 
   
-  if (SD.exists("fcntr.txt")) {
+  if (SD.exists("/fcntr.txt")) {
     Serial.println("Reading fileCounter");
-    File fileCounterFile = SD.open("fcntr.txt");
+    File fileCounterFile = SD.open("/fcntr.txt");
 
     // if the file is available, write to it:
     if (fileCounterFile) {
@@ -42,10 +42,10 @@ void Dumsky::SDClient::init() {
   else { 
     Serial.println("Creating fcntr");
     filesCounter = 0;
-    fileCounterFile = SD.open("fcntr.txt", FILE_WRITE);
+    fileCounterFile = SD.open("/fcntr.txt", FILE_WRITE);
     fileCounterFile.println(filesCounter);
     fileCounterFile.close();
-    if (SD.exists("fcntr.txt")) Serial.println("fcntr.txt created");
+    if (SD.exists("/fcntr.txt")) Serial.println("fcntr.txt created");
   }
 }
 
@@ -75,8 +75,8 @@ void Dumsky::SDClient::writeLogString(String logString) {
 
     if(recordsInFileCounter > maxRecordsInFile) {
         filesCounter++;
-        SD.remove("fcntr.txt");
-        fileCounterFile = SD.open("fcntr.txt", FILE_WRITE);
+        SD.remove("/fcntr.txt");
+        fileCounterFile = SD.open("/fcntr.txt", FILE_WRITE);
         if (fileCounterFile) {
           fileCounterFile.print(filesCounter);
           fileCounterFile.close();
@@ -89,7 +89,7 @@ void Dumsky::SDClient::writeLogString(String logString) {
         recordsInFileCounter = 1;
       }
       
-      File dataFile = SD.open((String(deviceId)+String("_")+String(filesCounter) + String(".txt")).c_str(), FILE_WRITE);
+      File dataFile = SD.open(String("/") + (String(deviceId)+String("_")+String(filesCounter) + String(".txt")).c_str(), FILE_WRITE);
 
       // if the file is available, write to it:
       if (dataFile) {

@@ -2,6 +2,8 @@
 #include "GPSTracker.h"
 #include <JsonMessageBuilder.h>
 
+using namespace Dumsky;
+
 GPSTracker::GPSTracker(int gpsScanPeriod) {
     this->gpsScanPeriod = gpsScanPeriod;
     authorizationBlock.deviceId = DEVICE_ID;
@@ -46,7 +48,7 @@ void GPSTracker::init() {
     mqttClient->init(MQTT_SERVER, MQTT_PORT, (Client*) gsmConnect.getClient());
     // mqttClient->keepAlive(MQTT_USER, MQTT_PSSWD);
     
-    // sdClient.init();
+    sdClient.init();
     // Serial.println("Jopa4");
     gpsClient->init(/*GPS_RX_PIN, GPS_TX_PIN*/);
    
@@ -101,6 +103,7 @@ void GPSTracker::readGpsData() {
         ) 
         ) {
             if(mqttClient->sendMessage(GPS_TPC, getGpsDataJson(gpsData))) coordSentCounter++;
+            sdClient.writeLogString(gpsData.toString());
             prevGpsData = gpsData;
             coordCounter++;
             lastGpsScanTime = millis();

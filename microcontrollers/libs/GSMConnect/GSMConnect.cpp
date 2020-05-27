@@ -17,12 +17,12 @@ int8_t GSMConnect::connect(char* apn, char* gprsUser, char* gprsPass) {
     // forceListen();
     
     // modem = new TinyGsm(SerialAT);
-    // SerialMon.println("Initializing modem->..");
-    //modem->restart();
-    //modem->init();
+    SerialMon.println("Initializing modem->..");
+    modem->restart();
+    // modem->init();
 
-    // SerialMon.print("Modem Info: ");
-    // SerialMon.println(modem->getModemInfo());
+    SerialMon.print("Modem Info: ");
+    SerialMon.println(modem->getModemInfo());
 
     // #if TINY_GSM_USE_GPRS
     // // Unlock your SIM card with a PIN if needed
@@ -33,31 +33,31 @@ int8_t GSMConnect::connect(char* apn, char* gprsUser, char* gprsPass) {
 
     modem->gprsConnect(apn, gprsUser, gprsPass);
 
-    // SerialMon.print("Waiting for network...");
+    SerialMon.print("Waiting for network...");
     if (!modem->waitForNetwork(1000000L)) {
-    //    SerialMon.println(" fail");
+       SerialMon.println(" fail");
         delay(10000);
         return -1;
     }
-    // SerialMon.println(" success");
+    SerialMon.println(" success");
 
-    // if (modem->isNetworkConnected()) {
-    //     SerialMon.println("Network connected");
-    // }
+    if (modem->isNetworkConnected()) {
+        SerialMon.println("Network connected");
+    }
 
     // GPRS connection parameters are usually set after network registration
-    // SerialMon.print(F("Connecting to "));
-    // SerialMon.print(apn);
+    SerialMon.print(F("Connecting to "));
+    SerialMon.print(apn);
     if (!modem->gprsConnect(apn, gprsUser, gprsPass)) {
-        // SerialMon.println(" fail");
+        SerialMon.println(" fail");
         // delay(10000);
         return -2;
     }
-    // SerialMon.println(" success");
+    SerialMon.println(" success");
 
-    // if (modem->isGprsConnected()) {
-    //     SerialMon.println("GPRS connected");
-    // }
+    if (modem->isGprsConnected()) {
+        SerialMon.println("GPRS connected");
+    }
 
     
     return 1;
