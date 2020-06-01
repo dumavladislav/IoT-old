@@ -31,4 +31,4 @@ build/
 .vscode/
 
 src/main/resources/application.properties
-src/main/resources/MQTT.config
+src/main/resources/MQTT.properties
