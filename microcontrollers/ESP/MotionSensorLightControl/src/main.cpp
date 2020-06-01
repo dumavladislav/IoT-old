@@ -56,15 +56,25 @@ void callback(char *topic, byte *payload, unsigned int length)
 
 ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
-// Interrupt callback
-ICACHE_RAM_ATTR void msStateChange() {
-  msState = digitalRead(MS_PIN);
-  mqttLightControl->updateState(msState);
+void applyNewState() {
   if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
    digitalWrite(RELAY_PIN, mqttLightControl->getState());
   else
     digitalWrite(RELAY_PIN, !mqttLightControl->getState());
 }
+
+// Interrupt callback
+ICACHE_RAM_ATTR void msStateChange() {
+  msState = digitalRead(MS_PIN);
+  mqttLightControl->updateState(msState);
+  // if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
+  //  digitalWrite(RELAY_PIN, mqttLightControl->getState());
+  // else
+  //   digitalWrite(RELAY_PIN, !mqttLightControl->getState());
+  applyNewState();
+}
+
+
 
 
 void setup()
@@ -177,8 +187,8 @@ void checkIRRemote() {
       // else
       // {
 
-      //   Serial.print("Received ");
-      //   Serial.print(mySwitch.getReceivedValue());
+        // Serial.print("Received ");
+        // Serial.println(mySwitch.getReceivedValue());
       //   Serial.print(" / ");
       //   Serial.print(mySwitch.getReceivedBitlength());
       //   Serial.print("bit ");
@@ -224,10 +234,12 @@ void loop()
 
   //Serial.println(mqttLightControl->getSettings().motionSensorSettings.relayMode);
   //Serial.println(msState);
-  if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
-    digitalWrite(RELAY_PIN, mqttLightControl->getState());
-  else
-    digitalWrite(RELAY_PIN, !(mqttLightControl->getState()));
+  // if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
+  //   digitalWrite(RELAY_PIN, mqttLightControl->getState());
+  // else
+  //   digitalWrite(RELAY_PIN, !(mqttLightControl->getState()));
+
+  applyNewState();
 
   checkIRRemote();
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////

@@ -57,6 +57,7 @@ public class AuthorizationService {
         {
             // TO DO: SEND AUTHORIZATION STATUS = authorized
             logger.info("TO DO: SEND AUTHORIZATION STATUS = authorized");
+            messageHeader.setToken(dumskyHomeSession.getSecurityToken());
             finalizeAuthorization(messageHeader, 1);
         }
         return CompletableFuture.completedFuture(1);
@@ -97,7 +98,7 @@ public class AuthorizationService {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonAuthorizationConfirmationMessage jsonAuthorizationConfirmationMessage = new JsonAuthorizationConfirmationMessage();
         jsonAuthorizationConfirmationMessage.setHeader(messageHeader);
-        jsonAuthorizationConfirmationMessage.setData(new JsonAuthorizationConfirmationData(decision == 1 ? true : false));
+        jsonAuthorizationConfirmationMessage.setData(new JsonAuthorizationConfirmationData(decision == 1 ? true : false, messageHeader.getToken()));
 
         try {
             String message = objectMapper.writeValueAsString(jsonAuthorizationConfirmationMessage);

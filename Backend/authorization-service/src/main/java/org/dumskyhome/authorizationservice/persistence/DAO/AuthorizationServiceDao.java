@@ -28,6 +28,7 @@ public class AuthorizationServiceDao {
     public DumskyHomeSession checkAuthorization(String macAddress) {
         logger.info("CHECKING AUTHORIZATION: " + macAddress);
         List<Device> deiviceList = devicesRepository.findByMacAddress(macAddress);
+        logger.info("Found " + deiviceList.size() + " devices");
         if (deiviceList.size()>0) {
             return createSession(deiviceList.get(0));
         }
@@ -48,7 +49,7 @@ public class AuthorizationServiceDao {
 
     private DumskyHomeSession createSession(Device device) {
         logger.info("Creating session for device id: " + device.getId());
-        return null;
+        return new DumskyHomeSession(device);
     }
 
 }

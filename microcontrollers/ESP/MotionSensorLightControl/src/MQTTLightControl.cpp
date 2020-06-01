@@ -22,7 +22,8 @@ MQTTLightControl::MQTTLightControl(/*char *devId, */char *mqttServer, int mqttPo
   this->authorizationBlock.macAddress = wifiConnect->getMacAddress();
   this->authorizationBlock.ipAddress = wifiConnect->getIpAddress().toString();
 
-  mqttClient = new MQTTClient((char*)(deviceSettings.deviceId.c_str()), mqttServer, mqttPort, wifiConnect->getNetworkClient());
+  mqttClient = new MQTTClient((char*)(deviceSettings.deviceId.c_str()));
+  mqttClient->init(mqttServer, mqttPort, wifiConnect->getNetworkClient());
   setState(LOW);
   setDefaultPresets();
   resetTimer();
@@ -180,15 +181,15 @@ void MQTTLightControl::onOperation()
 }
 
 void MQTTLightControl::authorizationResponse(String message) {
-  const size_t jsonSize = JSON_OBJECT_SIZE(4) + 120;
+  const size_t jsonSize = JSON_OBJECT_SIZE(6) + 2*JSON_OBJECT_SIZE(2) + 120;
   DynamicJsonDocument jsonDoc(jsonSize);
 
   deserializeJson(jsonDoc, message);
 
-  if(String((const char*)jsonDoc["macAddress"]) == this->authorizationBlock.macAddress) {
+  if(String((const char*)jsonDoc["header"]["macAddress"]) == this->authorizationBlock.macAddress) {
 
-    this->authorizationBlock.authorized = jsonDoc["authorized"];
-    this->authorizationBlock.securityToken = (const char *)jsonDoc["token"];
+    this->authorizationBlock.authorized = jsonDoc["data"]["authorized"];
+    this->authorizationBlock.securityToken = (const char *)jsonDoc["data"]["sessionToken"];
 
     settingsRequest();
   }

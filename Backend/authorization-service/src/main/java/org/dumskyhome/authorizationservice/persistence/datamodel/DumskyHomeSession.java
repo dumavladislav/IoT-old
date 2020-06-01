@@ -1,6 +1,7 @@
 package org.dumskyhome.authorizationservice.persistence.datamodel;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 @Entity
 public class DumskyHomeSession extends AuditModel {
@@ -14,6 +15,20 @@ public class DumskyHomeSession extends AuditModel {
     private Device device;
 
     private String securityToken;
+
+    public DumskyHomeSession() {
+        createSession();
+    };
+
+    public DumskyHomeSession(Device device) {
+        this.device = device;
+        createSession();
+    };
+
+    public String createSession() {
+        securityToken = UUID.randomUUID().toString();
+        return securityToken;
+    }
 
     public long getId() {
         return id;

@@ -136,7 +136,6 @@ public class MqttAgent implements MqttCallback {
 
             logger.info(mqttMessageJson.getData().getRequestType());
             authorizationService.checkAuthorization(mqttMessageJson.getHeader()).<ResponseEntity>thenApply(ResponseEntity::ok);
-
         }
 
         if (s.equals(env.getProperty("mqtt.topic.registrationResponses"))) {

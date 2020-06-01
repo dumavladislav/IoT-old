@@ -7,10 +7,10 @@ public class JsonAuthorizationConfirmationData {
     Boolean authorized;
     String sessionToken;
 
-    public JsonAuthorizationConfirmationData(Boolean authorized) {
+    public JsonAuthorizationConfirmationData(Boolean authorized, String sessionToken) {
         this.authorized = authorized;
         if (getAuthorized()) {
-            sessionToken = UUID.randomUUID().toString();
+            this.sessionToken = sessionToken;
         }
     }
 
