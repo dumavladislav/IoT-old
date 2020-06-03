@@ -10,6 +10,7 @@ bool MessageParser::parseIncomingMessage(std::string incomingMessage) {
     DynamicJsonDocument jsonDoc(jsonSize);
 
     deserializeJson(jsonDoc, incomingMessage);
+    //serializeJsonPretty(&jsonDoc, Serial);
     if(jsonDoc["header"]["macAddress"] == deviceAuthorizationBlock.macAddress) {
         this->header = jsonDoc["header"];
         this->data = jsonDoc["data"];

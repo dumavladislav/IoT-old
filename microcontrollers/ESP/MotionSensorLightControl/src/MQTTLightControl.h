@@ -8,6 +8,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <RCSwitch.h>
+#include <DumskyOLED.h>
 
 class MQTTLightControl /*: public IWifiDevice, public IMQTTDevice*/
 {
@@ -28,6 +29,8 @@ public:
     void setDeviceSettings(DeviceSettings newSettings); // setter
     void setDefaultPresets();
     void applyPreset(int presetNumber);
+    void increaseTimer();
+    void decreaseTimer();
     
     // -------------------------- Operation ------------------------------
     void updateState(int newState);
@@ -36,6 +39,8 @@ public:
     void setState(int newState);
 
     void resetTimer();
+
+    void showStatus();
 
 
 private:
@@ -62,5 +67,9 @@ private:
 
     AuthorizationBlock authorizationBlock;
     DeviceSettings deviceSettings;
-    std::vector<DeviceSettings> devicePresets;    
+    std::vector<DeviceSettings> devicePresets;  
+
+    DumskyOLED oled;
+
+    
 };

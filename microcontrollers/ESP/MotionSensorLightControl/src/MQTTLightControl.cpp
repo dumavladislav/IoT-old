@@ -27,6 +27,7 @@ MQTTLightControl::MQTTLightControl(/*char *devId, */char *mqttServer, int mqttPo
   setState(LOW);
   setDefaultPresets();
   resetTimer();
+  oled.init();
 }
 
 DeviceSettings MQTTLightControl::getSettings() {
@@ -175,7 +176,12 @@ void MQTTLightControl::onOperation()
   else
   {
     float currTime = millis();
-    if ((currTime - startTimeOfOperation) >= deviceSettings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration)
+    // Serial.println("====================================");
+    // Serial.println((currTime - startTimeOfOperation));
+    // Serial.println(deviceSettings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration);
+    // Serial.println("====================================");
+    // Serial.println();
+    if (((currTime - startTimeOfOperation)/1000) >= deviceSettings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration)
       this->deviceSettings.operationMode = operationModes::MSDRIVEN;
   }
 }
@@ -213,6 +219,9 @@ void MQTTLightControl::applyNewSettings(String message) {
     newSettings.operationMode = (operationModes)((int)data["operationMode"]);
     newSettings.motionSensorSettings.relayMode = data["motionSensorSettings"]["relayMode"];
     newSettings.motionSensorSettings.msDriveModeSettings.keepOnDurationSec = data["motionSensorSettings"]["msDriveModeSettings"]["keepOnDurationSec"];
+    Serial.println("=======================================");
+    Serial.println(String((const char*)data["motionSensorSettings"]["onModeSettings"]["maxOnOperationModeDuration"]));
+    Serial.println("=======================================");
     newSettings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration = data["motionSensorSettings"]["onModeSettings"]["maxOnOperationModeDuration"];
     this->setDeviceSettings(newSettings);
   }
@@ -240,6 +249,59 @@ void MQTTLightControl::applyPreset(int presetNumber) {
   setDeviceSettings(devicePresets[presetNumber]);
 }
 
+void MQTTLightControl::increaseTimer() {
+  switch(deviceSettings.operationMode) {
+    case operationModes::MSDRIVEN:
+      deviceSettings.motionSensorSettings.msDriveModeSettings.keepOnDurationSec += 5; 
+      break;
+    case operationModes::ON:
+      deviceSettings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration +=10;
+      break;
+  }
+}
+
+void MQTTLightControl::decreaseTimer() {
+  switch(deviceSettings.operationMode) {
+    case operationModes::MSDRIVEN:
+      deviceSettings.motionSensorSettings.msDriveModeSettings.keepOnDurationSec -= 5; 
+      break;
+    case operationModes::ON:
+      deviceSettings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration -=10;
+      break;
+  }
+}
+
 void MQTTLightControl::resetTimer() {
   startTimeOfOperation = millis();
+}
+
+void MQTTLightControl::showStatus() {
+  oled.clear();
+  DeviceSettings settings = getSettings();
+  String msStateStr = (MSState ? "ON " : "OFF");
+  
+  switch(settings.operationMode) {
+    case operationModes::MSDRIVEN: {
+      oled.addString("MS | " + msStateStr);
+      if (MSState == 1) {
+        oled.addString("Timer: "+ String(settings.motionSensorSettings.msDriveModeSettings.keepOnDurationSec) + " | Left: " + String(settings.motionSensorSettings.msDriveModeSettings.keepOnDurationSec - ((millis() - startTimeOfOperation)/1000),0));
+      }
+      break;
+    }
+    case operationModes::ON: {
+      oled.addString("ON | " + msStateStr);
+      if (MSState == 1) {
+        oled.addString("Timer: "+ String(settings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration) + " | Left: " + String(settings.motionSensorSettings.onModeSettings.maxOnOperationModeDuration - ((millis() - startTimeOfOperation)/1000),0));
+      }
+      break;
+    }
+    case operationModes::OFF: {
+      oled.addString("OFF | " + msStateStr);
+      break;
+    }
+  }
+  if(settings.operationMode == operationModes::MSDRIVEN) {
+      
+  }
+  oled.show();
 }

@@ -20,9 +20,10 @@ MQTTLightControl *mqttLightControl;
 volatile bool msState = 0;
 
 // PINS DECLARATION
-const int RELAY_PIN = D1;
-const int IR_REMOTE_PIN = D2;
-const int MS_PIN = D7;
+const int RELAY_PIN = D7;//D1;
+const int IR_REMOTE_PIN = D8;//D2;
+//const int MS_PIN = D7;
+const int MS_PIN = D0;
 ////////////
 
 RCSwitch mySwitch = RCSwitch();
@@ -58,7 +59,7 @@ void callback(char *topic, byte *payload, unsigned int length)
 
 void applyNewState() {
   if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
-   digitalWrite(RELAY_PIN, mqttLightControl->getState());
+    digitalWrite(RELAY_PIN, mqttLightControl->getState());
   else
     digitalWrite(RELAY_PIN, !mqttLightControl->getState());
 }
@@ -203,17 +204,22 @@ void checkIRRemote() {
       }
       if (mySwitch.getReceivedValue() == 11169970)
       {
-        mqttLightControl->applyPreset(1);
+        //mqttLightControl->applyPreset(1);
+        mqttLightControl->increaseTimer();
         Serial.write("UNLOCK Button pressed");
       }
       if (mySwitch.getReceivedValue() == 16736114)
       {
-        mqttLightControl->applyPreset(2);
+        //mqttLightControl->applyPreset(2);
+        mqttLightControl->decreaseTimer();
         Serial.write("HORN Button pressed");
       }
       if (mySwitch.getReceivedValue() == 16736120)
       {
-        mqttLightControl->applyPreset(3);
+        switch(mqttLightControl->getSettings().operationMode) {
+          case operationModes::ON: mqttLightControl->applyPreset(2); break;
+          default: mqttLightControl->applyPreset(1); break;
+        }
         Serial.write("OPEN TANK Button pressed");
       }
     
@@ -229,7 +235,7 @@ void loop()
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
   mqttLightControl->keepAlive(MQTT_USER, MQTT_PSSWD);
-  delay(10);
+  //delay(10);
   mqttLightControl->updateState(digitalRead(MS_PIN));
 
   //Serial.println(mqttLightControl->getSettings().motionSensorSettings.relayMode);
@@ -242,6 +248,7 @@ void loop()
   applyNewState();
 
   checkIRRemote();
+  mqttLightControl->showStatus();
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 }
 
