@@ -47,11 +47,12 @@ void MQTTClient::mqttConnect(char *mqttUsr, char *mqttPasswd)
         // Serial.println("==========================================");
         // Serial.println(deviceId);
         // Serial.println(String(random(0xffff), HEX).c_str());
-        // Serial.println(dt);
+        //Serial.println(dt);
         // Serial.println("==========================================");
         //snprintf(deviceSessionId, 50, "%s_%s", deviceId, String(random(0xffff), HEX).c_str());
-        deviceSessionId = (char *)String(String(deviceId) + String(random(0xffff), HEX) + String(millis())).c_str();
+        deviceSessionId = (char *)String(String(deviceId) + String(random(0xffff), HEX)).c_str();// + String(millis())).c_str();
         //deviceSessionId = (char*) ( String("sdfsdf") + String("_444") ).c_str(); 
+        // Serial.println(String(deviceId) + String(random(0xffff), HEX) + String(millis()));
         // Serial.println(deviceSessionId);
         // Serial.println(mqttUsr);
         // Serial.println(mqttPasswd);
@@ -86,6 +87,9 @@ void MQTTClient::setCallback(MQTT_CALLBACK_SIGNATURE)
 
 boolean MQTTClient::sendMessage(char *topicName, String message)
 {
+    Serial.print("Message to topic: ");
+    Serial.println(topicName);
+    Serial.println(message);
     if(!client.publish(topicName, message.c_str())) 
     {
         // Serial.println("Message NOT published");

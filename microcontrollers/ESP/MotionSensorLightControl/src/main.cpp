@@ -21,10 +21,13 @@ volatile bool msState = 0;
 
 // PINS DECLARATION
 const int RELAY_PIN = D7;//D1;
-const int IR_REMOTE_PIN = D8;//D2;
+const int IR_REMOTE_PIN = D6;//D2; D8 - HANGS Wemos
 //const int MS_PIN = D7;
 const int MS_PIN = D0;
+const int PR_PIN = A0; // Photoresistor
 ////////////
+
+int lastIRActionTime = 0;
 
 RCSwitch mySwitch = RCSwitch();
 
@@ -34,13 +37,14 @@ void callback(char *topic, byte *payload, unsigned int length)
   Serial.print(topic);
   Serial.print("] ");
 
-  String messageTemp;
+  String messageTemp = String((char*)payload);
 
-  for (int i = 0; i < length; i++)
-  {
-    Serial.print((char)payload[i]);
-    messageTemp += (char)payload[i];
-  }
+  // for (int i = 0; i < length; i++)
+  // {
+  //   Serial.print((char)payload[i]);
+  //   messageTemp += (char)payload[i];
+  // }
+  Serial.println(messageTemp);
   Serial.println();
 
   if (String(topic) == AUTHORIZATION_REQUESTS_STATUS_TPC)
@@ -68,10 +72,12 @@ void applyNewState() {
 ICACHE_RAM_ATTR void msStateChange() {
   msState = digitalRead(MS_PIN);
   mqttLightControl->updateState(msState);
-  // if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
-  //  digitalWrite(RELAY_PIN, mqttLightControl->getState());
-  // else
-  //   digitalWrite(RELAY_PIN, !mqttLightControl->getState());
+  applyNewState();
+}
+
+ICACHE_RAM_ATTR void msStateLow() {
+  // msState = digitalRead(MS_PIN);
+  mqttLightControl->updateState(0);
   applyNewState();
 }
 
@@ -80,7 +86,7 @@ ICACHE_RAM_ATTR void msStateChange() {
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println("Booting");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -92,17 +98,17 @@ void setup()
   }
 
   // Port defaults to 8266
-  // ArduinoOTA.setPort(8266);
+  ArduinoOTA.setPort(8266);
 
   // Hostname defaults to esp8266-[ChipID]
-  // ArduinoOTA.setHostname("myesp8266");
+  ArduinoOTA.setHostname("myesp8266");
 
   // No authentication by default
-  // ArduinoOTA.setPassword("admin");
+  ArduinoOTA.setPassword("admin");
 
   // Password can be set with it's md5 value as well
   // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
-  // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
+  ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
 
   ArduinoOTA.onStart([]() {
     String type;
@@ -156,6 +162,7 @@ void setup()
 
   pinMode(MS_PIN, INPUT); // Initialize the BUILTIN_LED pin as an output
   pinMode(RELAY_PIN, OUTPUT);
+  pinMode(PR_PIN, INPUT);
 
   //  Serial.begin(9600);
 
@@ -165,8 +172,11 @@ void setup()
     ESP.getChipId());
   mqttLightControl->setCallback(callback);
 
-  msStateChange();
+  //msStateChange();
   attachInterrupt(digitalPinToInterrupt(MS_PIN), msStateChange, RISING);
+  // attachInterrupt(digitalPinToInterrupt(MS_PIN), msStateLow, ONLOW);
+  
+  applyNewState();
 
   mqttLightControl->connect();
   mqttLightControl->authorizationRequest();
@@ -179,53 +189,65 @@ void setup()
 void checkIRRemote() {
   if (mySwitch.available())
     {
+      // if((millis() - lastIRActionTime) > 10) {
+        lastIRActionTime = millis();
 
-      int value = mySwitch.getReceivedValue();
-      // if (value == 0)
-      // {
-      //   Serial.print("Unknown encoding");
-      // }
-      // else
-      // {
-
-        // Serial.print("Received ");
-        // Serial.println(mySwitch.getReceivedValue());
-      //   Serial.print(" / ");
-      //   Serial.print(mySwitch.getReceivedBitlength());
-      //   Serial.print("bit ");
-      //   Serial.print("Protocol: ");
-      //   Serial.println(mySwitch.getReceivedProtocol());
-      // }
-
-      if (mySwitch.getReceivedValue() == 16736113)
-      {
-        mqttLightControl->applyPreset(0);
-        Serial.write("LOCK Button pressed");
-      }
-      if (mySwitch.getReceivedValue() == 11169970)
-      {
-        //mqttLightControl->applyPreset(1);
-        mqttLightControl->increaseTimer();
-        Serial.write("UNLOCK Button pressed");
-      }
-      if (mySwitch.getReceivedValue() == 16736114)
-      {
-        //mqttLightControl->applyPreset(2);
-        mqttLightControl->decreaseTimer();
-        Serial.write("HORN Button pressed");
-      }
-      if (mySwitch.getReceivedValue() == 16736120)
-      {
-        switch(mqttLightControl->getSettings().operationMode) {
-          case operationModes::ON: mqttLightControl->applyPreset(2); break;
-          default: mqttLightControl->applyPreset(1); break;
+        int value = mySwitch.getReceivedValue();
+        if (value == 0)
+        {
+          Serial.print("Unknown encoding");
         }
-        Serial.write("OPEN TANK Button pressed");
-      }
+        else
+        {
+
+          Serial.print("Received ");
+          Serial.println(mySwitch.getReceivedValue());
+          Serial.print(" / ");
+          Serial.print(mySwitch.getReceivedBitlength());
+          Serial.print("bit ");
+          Serial.print("Protocol: ");
+          Serial.println(mySwitch.getReceivedProtocol());
+        }
+
+        if (mySwitch.getReceivedValue() == 16736113)
+        {
+          mqttLightControl->togglePreset();
+          Serial.write("LOCK Button pressed");
+        }
+        if (mySwitch.getReceivedValue() == 11169970)
+        {
+          //mqttLightControl->applyPreset(1);
+          mqttLightControl->increaseTimer();
+          Serial.write("UNLOCK Button pressed");
+        }
+        if (mySwitch.getReceivedValue() == 16736114)
+        {
+          //mqttLightControl->applyPreset(2);
+          mqttLightControl->decreaseTimer();
+          Serial.write("HORN Button pressed");
+        }
+        if (mySwitch.getReceivedValue() == 16736120)
+        {
+          DeviceSettings newSettings = mqttLightControl->getSettings();
+          
+          switch(newSettings.operationMode) {
+            case operationModes::MSDRIVEN: newSettings.operationMode = operationModes::ON; break;
+            case operationModes::ON: newSettings.operationMode = operationModes::OFF; break;
+            default: newSettings.operationMode = operationModes::MSDRIVEN; break;
+          }
+          
+          mqttLightControl->setDeviceSettings(newSettings);
+          Serial.write("OPEN TANK Button pressed");
+        }
+      // }
     
 
       mySwitch.resetAvailable();
     }
+}
+
+int readIllumination() {
+  return analogRead(PR_PIN);
 }
 
 void loop()
@@ -238,16 +260,12 @@ void loop()
   //delay(10);
   mqttLightControl->updateState(digitalRead(MS_PIN));
 
-  //Serial.println(mqttLightControl->getSettings().motionSensorSettings.relayMode);
-  //Serial.println(msState);
-  // if (mqttLightControl->getSettings().motionSensorSettings.relayMode)
-  //   digitalWrite(RELAY_PIN, mqttLightControl->getState());
-  // else
-  //   digitalWrite(RELAY_PIN, !(mqttLightControl->getState()));
-
   applyNewState();
 
   checkIRRemote();
+  int illumination = readIllumination();
+  // Serial.print("Illumination: ");
+  // Serial.println(illumination);
   mqttLightControl->showStatus();
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 }

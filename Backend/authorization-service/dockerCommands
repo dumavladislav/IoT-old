@@ -1,0 +1,8 @@
+# Copy files to server
+ssh dumavla@192.168.1.53 "rm -f -r authorization-service && mkdir authorization-service"
+scp -r /c/dumavla/GitHub/IoT/Backend/authorization-service/* dumavla@192.168.1.53:~/authorization-service
+
+
+#docker build
+sudo docker build .
+sudo docker run --name authorization-service-rev2  --restart unless-stopped -it -d 08c09b39c199

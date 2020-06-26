@@ -1,10 +1,10 @@
-package org.dumskyhome.gpsagent.mqtt;
+package org.dumskyhome.settingsservice.mqtt;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.dumskyhome.gpsagent.json.JsonGpsDataMessage;
-import org.dumskyhome.gpsagent.persistence.dao.GpsAgentDao;
-import org.dumskyhome.gpsagent.persistence.datamodel.GpsData;
+import org.dumskyhome.settingsservice.json.JsonSettingsRequestData;
+import org.dumskyhome.settingsservice.json.JsonSettingsRequestMessage;
+import org.dumskyhome.settingsservice.service.SettingsService;
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,22 +20,18 @@ import org.springframework.stereotype.Component;
 public class MqttAgent implements MqttCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(MqttAgent.class);
-    private ObjectMapper objectMapper;
 
+    private ObjectMapper objectMapper;
     private MqttClient mqttClient;
 
     @Value("${mqtt.clientId}")
     private String mqttClientId;
-    //private ThreadPoolExecutor executor;
-//    @Autowired
-//    MqttMessageProcessor mqttMessageProcessor;
-
-    @Autowired
-    //private GPSAgentService gpsAgentService;
-    private GpsAgentDao gpsAgentDao;
 
     @Autowired
     Environment env;
+
+    @Autowired
+    private SettingsService settingsService;
 
     MqttAgent() {
         objectMapper = new ObjectMapper();
@@ -43,6 +40,8 @@ public class MqttAgent implements MqttCallback {
         objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
         objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
     }
+
+
 
     private void init() {
         try {
@@ -74,7 +73,7 @@ public class MqttAgent implements MqttCallback {
 
     private boolean subscribeToTopics() {
         try {
-            mqttClient.subscribe(env.getProperty("mqtt.topic.gpsData"));
+            mqttClient.subscribe(env.getProperty("mqtt.topic.settingsRequests"));
             mqttClient.setCallback(this);
             return true;
         } catch (MqttException e) {
@@ -103,7 +102,6 @@ public class MqttAgent implements MqttCallback {
         }
     }
 
-
     @Override
     public void connectionLost(Throwable throwable) {
         logger.error("CONNECTION LOST");
@@ -122,19 +120,12 @@ public class MqttAgent implements MqttCallback {
     @Override
     public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
         logger.info("TOPIC:"+ s + " || MESSAGE RECEIVED: " + mqttMessage.toString());
-        if (s.equals(env.getProperty("mqtt.topic.gpsData"))) {
-            logger.info("GPS Data received. Parsing....");
-            JsonGpsDataMessage jsonGpsDataMessage = objectMapper.readValue(mqttMessage.toString(), JsonGpsDataMessage.class);
+        if (s.equals(env.getProperty("mqtt.topic.settingsRequests"))) {
+            logger.info("Settings Request received. Parsing....");
+            JsonSettingsRequestMessage jsonSettingsRequestMessage = objectMapper.readValue(mqttMessage.toString(), JsonSettingsRequestMessage.class);
 
-            logger.info(jsonGpsDataMessage.getData().getLat().toString());
-            //gpsAgentService.saveGpsData(jsonGpsDataMessage).<ResponseEntity>thenApply(ResponseEntity::ok);
-            GpsData gpsData = gpsAgentDao.saveGpsData(new GpsData(
-                    jsonGpsDataMessage.getHeader().getMacAddress(),
-                    jsonGpsDataMessage.getData().getMillis(),
-                    jsonGpsDataMessage.getData().getLat(),
-                    jsonGpsDataMessage.getData().getLng()
-            ));
-
+            logger.info(jsonSettingsRequestMessage.getHeader().getMacAddress());
+            settingsService.provideDeviceSettings(jsonSettingsRequestMessage.getHeader()).<ResponseEntity>thenApply(ResponseEntity::ok);
         }
     }
 

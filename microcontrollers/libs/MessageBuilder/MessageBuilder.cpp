@@ -56,7 +56,7 @@ String MessageBuilder::generateJson() {
     }
 
     String jsonSerialized;
-    serializeJson(jsonDoc, Serial);
+    //serializeJson(jsonDoc, Serial);
     serializeJson(jsonDoc, jsonSerialized);
 
     // Start a new line
@@ -64,7 +64,7 @@ String MessageBuilder::generateJson() {
 
     // Generate the prettified JSON and send it to the Serial port.
     //
-    serializeJsonPretty(jsonDoc, Serial);
+    //serializeJsonPretty(jsonDoc, Serial);
 
   return jsonSerialized;
 

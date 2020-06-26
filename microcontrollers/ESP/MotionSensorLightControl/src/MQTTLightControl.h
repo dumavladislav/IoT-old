@@ -5,12 +5,9 @@
 #include "Constants/Credentials.h"
 #include <DeviceSettings.h>
 #include "AuthorizationBlock.h"
-#include <iostream>
-#include <unordered_map>
-#include <RCSwitch.h>
 #include <DumskyOLED.h>
 
-class MQTTLightControl /*: public IWifiDevice, public IMQTTDevice*/
+class MQTTLightControl
 {
 
 public:
@@ -27,8 +24,9 @@ public:
     // -------------------------- Settings -------------------------------
     void applyNewSettings(String message);  // when MQTT message comes
     void setDeviceSettings(DeviceSettings newSettings); // setter
-    void setDefaultPresets();
+    // void setDefaultPresets();
     void applyPreset(int presetNumber);
+    void togglePreset();
     void increaseTimer();
     void decreaseTimer();
     
@@ -37,9 +35,7 @@ public:
 
     int getState();
     void setState(int newState);
-
     void resetTimer();
-
     void showStatus();
 
 
@@ -58,18 +54,20 @@ private:
     // void sendOperationMode();
 
     float startTimeOfOperation;
+    int previousOperationCheckTime = 0;
 
     void msDrivenOperation(int newState);
     void offOperation();
     void onOperation();
-    String generateJson(std::unordered_map<String, String> hashmap);
     void settingsRequest();
 
     AuthorizationBlock authorizationBlock;
     DeviceSettings deviceSettings;
-    std::vector<DeviceSettings> devicePresets;  
+    std::vector<DeviceSettings> devicePresets;
+    int currentPreset = 0;
 
     DumskyOLED oled;
+    long lastScreenUpdateTime=0;
 
     
 };

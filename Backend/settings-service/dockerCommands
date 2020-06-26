@@ -1,0 +1,8 @@
+# Copy files to server
+ssh dumavla@192.168.1.53 "rm -f -r settings-service && mkdir settings-service"
+scp -r /c/dumavla/GitHub/IoT/Backend/settings-service/* dumavla@192.168.1.53:~/settings-service
+
+
+#docker build
+sudo docker build .
+sudo docker run --name settings-service-rev2  --restart unless-stopped -it -d 08c09b39c199

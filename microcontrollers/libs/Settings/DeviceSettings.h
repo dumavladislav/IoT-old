@@ -12,7 +12,9 @@ enum operationModes
 
 struct DeviceSettings
 {
-    String deviceId = "HALL_SENSOR_TABLE_1";
+    String deviceId = "MSHALL";
+    String name;
+    boolean defaultPreset;
     operationModes operationMode = operationModes::MSDRIVEN;
     MotionSensorSettings motionSensorSettings;
 };

@@ -99,8 +99,9 @@ public class MqttAgent implements MqttCallback {
         return false;
     }
 
-    public void sendMessage(String topic, String messageString) {
+    public void sendMessage(String topic, String messageString, int QoS) {
         MqttMessage mqttMessage = new MqttMessage();
+        mqttMessage.setQos(QoS);
         mqttMessage.setPayload(messageString.getBytes());
         try {
             mqttClient.publish(topic, mqttMessage);

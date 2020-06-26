@@ -71,7 +71,7 @@ public class AuthorizationService {
         try {
             String message = objectMapper.writeValueAsString(jsonRegistrationRequestMessage);
             logger.info(message);
-            mqttAgent.sendMessage(env.getProperty("mqtt.topic.registrationRequests"), message);
+            mqttAgent.sendMessage(env.getProperty("mqtt.topic.registrationRequests"), message, 2);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -103,7 +103,7 @@ public class AuthorizationService {
         try {
             String message = objectMapper.writeValueAsString(jsonAuthorizationConfirmationMessage);
             logger.info(message);
-            mqttAgent.sendMessage(env.getProperty("mqtt.topic.authorizationResponses"), message);
+            mqttAgent.sendMessage(env.getProperty("mqtt.topic.authorizationResponses"), message, 2);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
