@@ -19,6 +19,9 @@ MQTTLightControl::MQTTLightControl(/*char *devId, */char *mqttServer, int mqttPo
   this->authorizationBlock.macAddress = wifiConnect->getMacAddress();
   this->authorizationBlock.ipAddress = wifiConnect->getIpAddress().toString();
 
+  deviceSettings.deviceId = DEVICE_ID;
+  Serial.print("Device ID");
+  Serial.println(deviceSettings.deviceId.c_str());
   mqttClient = new MQTTClient((char*)(deviceSettings.deviceId.c_str()));
   mqttClient->init(mqttServer, mqttPort, wifiConnect->getNetworkClient());
   setState(LOW);
@@ -47,7 +50,10 @@ void MQTTLightControl::connect()
 
 void MQTTLightControl::keepAlive(char *mqttUsr, char *mqttPasswd)
 {
-  mqttClient->keepAlive(mqttUsr, mqttPasswd);
+  // if((millis() - lastMQTTKeepaliveLoop) > PERIOD_MQTT_KEEPALIVE) {
+    mqttClient->keepAlive(mqttUsr, mqttPasswd);
+    // lastMQTTKeepaliveLoop = millis();
+  // }
 }
 
 void MQTTLightControl::authorizationRequest() {
@@ -365,5 +371,16 @@ void MQTTLightControl::showStatus() {
     lastScreenUpdateTime = millis();
     // Serial.print("showStatus duration: ");
     // Serial.println(millis() - startTime);
+  }
+}
+
+int MQTTLightControl::updateIllumination(int illumination) {
+  if ((millis() - lastIllumTimeSend) > (PERIOD_ILLUMINATION_READ * 1000))
+  {
+    MessageBuilder messageBuilder(authorizationBlock);
+    messageBuilder.addElement("illumination", String(illumination));
+    mqttClient->sendMessage(ILLUMINATION_TPC, messageBuilder.generateJson());
+    lastIllumTimeSend = millis();
+    
   }
 }

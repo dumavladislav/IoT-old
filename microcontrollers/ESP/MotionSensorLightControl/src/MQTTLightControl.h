@@ -32,6 +32,7 @@ public:
     
     // -------------------------- Operation ------------------------------
     void updateState(int newState);
+    int updateIllumination(int illumination);
 
     int getState();
     void setState(int newState);
@@ -68,6 +69,8 @@ private:
 
     DumskyOLED oled;
     long lastScreenUpdateTime=0;
+    long lastIllumTimeSend = 0;
+    long lastMQTTKeepaliveLoop = 0;
 
     
 };

@@ -52,13 +52,13 @@ void MQTTClient::mqttConnect(char *mqttUsr, char *mqttPasswd)
         //snprintf(deviceSessionId, 50, "%s_%s", deviceId, String(random(0xffff), HEX).c_str());
         deviceSessionId = (char *)String(String(deviceId) + String(random(0xffff), HEX)).c_str();// + String(millis())).c_str();
         //deviceSessionId = (char*) ( String("sdfsdf") + String("_444") ).c_str(); 
-        // Serial.println(String(deviceId) + String(random(0xffff), HEX) + String(millis()));
+        // Serial.println(String(String(deviceId) + String(random(0xffff), HEX)).c_str());
         // Serial.println(deviceSessionId);
         // Serial.println(mqttUsr);
         // Serial.println(mqttPasswd);
         // Serial.print("Attempting MQTT connection...");
         // Attempt to connect
-        if (!client.connect(deviceSessionId, mqttUsr, mqttPasswd))
+        if (!client.connect(String(String(deviceId) + String(random(0xffff), HEX)).c_str(), mqttUsr, mqttPasswd))
         {
             // Serial.print("failed, rc=");
             // Serial.print(client.state());
@@ -75,7 +75,7 @@ void MQTTClient::keepAlive(char *mqttUsr, char *mqttPasswd)
 {   
     if (!client.connected())
     {
-          mqttConnect(mqttUsr, mqttPasswd);
+        mqttConnect(mqttUsr, mqttPasswd);
     }
     client.loop();
 };
@@ -92,7 +92,7 @@ boolean MQTTClient::sendMessage(char *topicName, String message)
     Serial.println(message);
     if(!client.publish(topicName, message.c_str())) 
     {
-        // Serial.println("Message NOT published");
+        Serial.println("Message NOT published");
         return false;
     }
     return true;

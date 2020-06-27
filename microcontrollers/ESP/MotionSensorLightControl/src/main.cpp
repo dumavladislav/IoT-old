@@ -29,6 +29,7 @@ const int PR_PIN = A0; // Photoresistor
 
 int lastIRActionTime = 0;
 
+
 RCSwitch mySwitch = RCSwitch();
 
 void callback(char *topic, byte *payload, unsigned int length)
@@ -252,18 +253,26 @@ int readIllumination() {
 
 void loop()
 {
+  if(!WiFi.isConnected()) {
+    Serial.println("WI-FI RECONNECTION");
+    WiFi.begin(ssid, password);
+  }
+
   ArduinoOTA.handle();
 
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
   mqttLightControl->keepAlive(MQTT_USER, MQTT_PSSWD);
-  //delay(10);
+  delay(1);
   mqttLightControl->updateState(digitalRead(MS_PIN));
 
   applyNewState();
 
   checkIRRemote();
-  int illumination = readIllumination();
+
+  
+  mqttLightControl->updateIllumination(readIllumination());
+
   // Serial.print("Illumination: ");
   // Serial.println(illumination);
   mqttLightControl->showStatus();
