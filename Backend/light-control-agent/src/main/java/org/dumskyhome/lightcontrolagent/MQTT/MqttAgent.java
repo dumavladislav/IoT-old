@@ -2,6 +2,7 @@ package org.dumskyhome.lightcontrolagent.MQTT;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.dumskyhome.lightcontrolagent.json.JsonLightEventMessage;
 import org.dumskyhome.lightcontrolagent.persistence.DAO.HomeAutomationDAO;
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
@@ -172,10 +173,13 @@ public class MqttAgent implements MqttCallback {
     @Override
     public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
         logger.info("MESSAGE ARRIVED!");
-        byte[] payload = mqttMessage.getPayload();
+        JsonLightEventMessage message = objectMapper.readValue(mqttMessage.toString(), JsonLightEventMessage.class);
+        /*byte[] payload = mqttMessage.getPayload();
         String payloadStr = new String(payload);
         int newMotionState = Integer.parseInt(payloadStr.substring(payloadStr.length()-1));     //(int) (payload[payload.length-1] & 0xFF); //intBuf.get();
-        homeAutomationDAO.saveMotionEvent(newMotionState).<ResponseEntity>thenApply(ResponseEntity::ok)
+        */
+        homeAutomationDAO.saveMotionEvent(message.getData().getMsState()).<ResponseEntity>thenApply(ResponseEntity::ok)
+
         //.exceptionally(handleGetCarFailure)
         ;
     }
