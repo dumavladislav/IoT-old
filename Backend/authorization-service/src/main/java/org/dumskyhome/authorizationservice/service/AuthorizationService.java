@@ -23,8 +23,8 @@ public class AuthorizationService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthorizationService.class);
 
-    @Autowired
-    MqttAgent mqttAgent;
+//    @Autowired
+//    MqttAgent mqttAgent;
 
     @Autowired
     AuthorizationServiceDao authorizationServiceDao;
@@ -32,15 +32,15 @@ public class AuthorizationService {
     @Autowired
     Environment env;
 
-    public boolean runService() {
-        if (mqttAgent.runMqttService()) logger.info("MQTT service started");
-        else logger.info("Failed to start MQTT service");
-
-        return true;
-    }
+//    public boolean runService() {
+//        if (mqttAgent.runMqttService()) logger.info("MQTT service started");
+//        else logger.info("Failed to start MQTT service");
+//
+//        return true;
+//    }
 
     @Async
-    public CompletableFuture<Integer> checkAuthorization(JsonMqttMessageHeader messageHeader) {
+    public CompletableFuture<JsonMqttMessageHeader> checkAuthorization(JsonMqttMessageHeader messageHeader) {
         logger.info("Checking authorization....");
         DumskyHomeSession dumskyHomeSession = authorizationServiceDao.checkAuthorization(messageHeader.getMacAddress());
         logger.info("Authorization checked");
@@ -49,33 +49,22 @@ public class AuthorizationService {
 
             // TO DO: SEND MESSAGE TO REGISTRATION REQUESTS QUEUE
             logger.info("TO DO: SEND MESSAGE TO REGISTRATION REQUESTS QUEUE");
-            sendRegistrationRequest(messageHeader);
 
-            CompletableFuture.completedFuture(-1);
+
+            CompletableFuture.completedFuture(messageHeader);
         }
         else
         {
             // TO DO: SEND AUTHORIZATION STATUS = authorized
             logger.info("TO DO: SEND AUTHORIZATION STATUS = authorized");
+            messageHeader.setAuthorized(1);
             messageHeader.setToken(dumskyHomeSession.getSecurityToken());
-            finalizeAuthorization(messageHeader, 1);
+//            finalizeAuthorization(messageHeader, 1);
         }
-        return CompletableFuture.completedFuture(1);
+        return CompletableFuture.completedFuture(messageHeader);
     }
 
-    public void sendRegistrationRequest(JsonMqttMessageHeader messageHeader) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonRegistrationRequestMessage jsonRegistrationRequestMessage = new JsonRegistrationRequestMessage();
-        jsonRegistrationRequestMessage.setHeader(messageHeader);
-        jsonRegistrationRequestMessage.setData(new JsonRegistrationRequestData("registration"));
-        try {
-            String message = objectMapper.writeValueAsString(jsonRegistrationRequestMessage);
-            logger.info(message);
-            mqttAgent.sendMessage(env.getProperty("mqtt.topic.registrationRequests"), message, 2);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-    }
+
 
     public void finalizeRegistration(JsonRegistrationResponseMessage message) {
         if (message.getData().getDecision() == 1) {
@@ -91,23 +80,8 @@ public class AuthorizationService {
         {
             logger.info("Registration DECLINE for device" + message.getHeader().getMacAddress());
         }
-        finalizeAuthorization(message.getHeader(), message.getData().getDecision());
     }
 
-    public void finalizeAuthorization(JsonMqttMessageHeader messageHeader, Integer decision) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonAuthorizationConfirmationMessage jsonAuthorizationConfirmationMessage = new JsonAuthorizationConfirmationMessage();
-        jsonAuthorizationConfirmationMessage.setHeader(messageHeader);
-        jsonAuthorizationConfirmationMessage.setData(new JsonAuthorizationConfirmationData(decision == 1 ? true : false, messageHeader.getToken()));
 
-        try {
-            String message = objectMapper.writeValueAsString(jsonAuthorizationConfirmationMessage);
-            logger.info(message);
-            mqttAgent.sendMessage(env.getProperty("mqtt.topic.authorizationResponses"), message, 2);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-    }
 
 }

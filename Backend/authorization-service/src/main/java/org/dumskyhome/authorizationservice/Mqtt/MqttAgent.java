@@ -3,9 +3,7 @@ package org.dumskyhome.authorizationservice.Mqtt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.dumskyhome.authorizationservice.Json.JsonAuthorisationRequestMessage;
-import org.dumskyhome.authorizationservice.Json.JsonMqttMessageHeader;
-import org.dumskyhome.authorizationservice.Json.JsonRegistrationResponseMessage;
+import org.dumskyhome.authorizationservice.Json.*;
 import org.dumskyhome.authorizationservice.service.AuthorizationService;
 import org.eclipse.paho.client.mqttv3.*;
 import org.slf4j.Logger;
@@ -17,8 +15,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @PropertySource("classpath:mqtt.properties")
@@ -136,12 +133,52 @@ public class MqttAgent implements MqttCallback {
             JsonAuthorisationRequestMessage mqttMessageJson = objectMapper.readValue(mqttMessage.toString(), JsonAuthorisationRequestMessage.class);
 
             logger.info(mqttMessageJson.getData().getRequestType());
-            authorizationService.checkAuthorization(mqttMessageJson.getHeader()).<ResponseEntity>thenApply(ResponseEntity::ok);
-        }
+            // CompletableFuture<Integer> authorized;
+            authorizationService.checkAuthorization(mqttMessageJson.getHeader()).<Integer>thenApply(messageHeader -> {
+                if (messageHeader.getAuthorized() == 1) {
+                    finalizeAuthorization(messageHeader, 1);
+                }
+                else {
+                    sendRegistrationRequest(messageHeader);
+                }
+                return null;
+            });
+         }
 
         if (s.equals(env.getProperty("mqtt.topic.registrationResponses"))) {
             JsonRegistrationResponseMessage message = objectMapper.readValue(mqttMessage.toString(), JsonRegistrationResponseMessage.class);
             authorizationService.finalizeRegistration(message);
+            finalizeAuthorization(message.getHeader(), message.getData().getDecision());
+        }
+    }
+
+    public void finalizeAuthorization(JsonMqttMessageHeader messageHeader, Integer decision) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonAuthorizationConfirmationMessage jsonAuthorizationConfirmationMessage = new JsonAuthorizationConfirmationMessage();
+        jsonAuthorizationConfirmationMessage.setHeader(messageHeader);
+        jsonAuthorizationConfirmationMessage.setData(new JsonAuthorizationConfirmationData(decision == 1 ? true : false, messageHeader.getToken()));
+
+        try {
+            String message = objectMapper.writeValueAsString(jsonAuthorizationConfirmationMessage);
+            logger.info(message);
+            /*mqttAgent.*/sendMessage(env.getProperty("mqtt.topic.authorizationResponses"), message, 2);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void sendRegistrationRequest(JsonMqttMessageHeader messageHeader) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonRegistrationRequestMessage jsonRegistrationRequestMessage = new JsonRegistrationRequestMessage();
+        jsonRegistrationRequestMessage.setHeader(messageHeader);
+        jsonRegistrationRequestMessage.setData(new JsonRegistrationRequestData("registration"));
+        try {
+            String message = objectMapper.writeValueAsString(jsonRegistrationRequestMessage);
+            logger.info(message);
+            sendMessage(env.getProperty("mqtt.topic.registrationRequests"), message, 2);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
     }
 

@@ -19,8 +19,8 @@ public class AuthorizationServiceApplication {
 		ApplicationContext applicationContext = SpringApplication.run(AuthorizationServiceApplication.class, args);
 		logger.info("Application started");
 
-		AuthorizationService authorizationService = applicationContext.getBean(AuthorizationService.class);
-		if (authorizationService.runService()) logger.info("Authorization Service started");
+		MqttAgent mqttAgent = applicationContext.getBean(MqttAgent.class);
+		if (mqttAgent.runMqttService()) logger.info("Authorization Service started");
 		else logger.info("Failed to start Authorization Service!");
 	}
 }

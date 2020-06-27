@@ -64,7 +64,7 @@ public class MqttAgent implements MqttCallback {
             InputStream input = null;
             input = ClassLoader.getSystemClassLoader().getResourceAsStream("mqtt.properties");
             properties.load(input);
-            //properties.load(new FileReader(new File("src/main/resources/MQTT.properties")));
+            //properties.load(new FileReader(new File("src/main/resources/mqtt.properties")));
             clientId = UUID.randomUUID().toString();
             mqttClient = new MqttClient(properties.getProperty("mqtt.serverUrl"), clientId);
             //this.eventsService = eventsService;

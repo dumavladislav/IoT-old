@@ -50,7 +50,7 @@
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>libs/</classpathPrefix>
 							<mainClass>
-								org.dumskyhome.gpsagent.SettingsServiceApplication
+								org.dumskyhome.settingsservice.SettingsServiceApplication
 							</mainClass>
 						</manifest>
 					</archive>
