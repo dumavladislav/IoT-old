@@ -263,7 +263,7 @@ void loop()
   ///////////////////////// CUSTOM CODE ///////////////////////////////////////
 
   mqttLightControl->keepAlive(MQTT_USER, MQTT_PSSWD);
-  delay(1);
+  delay(1);         // Otherwise MQTT messages are not sent
   mqttLightControl->updateState(digitalRead(MS_PIN));
 
   applyNewState();
