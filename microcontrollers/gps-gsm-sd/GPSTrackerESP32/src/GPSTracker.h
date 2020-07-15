@@ -5,6 +5,9 @@
 #include <MQTTClient.h>
 #include <DumskyOLED.h>
 #include "Constants/Constants.h"
+#include <Wire.h>
+#include <RealTimeClock.h>
+
 
 class GPSTracker {
 
@@ -48,7 +51,7 @@ private:
     unsigned long coordCounter = 0;
     unsigned long coordSentCounter = 0;
 
-
+    RealTimeClock rtc;
 };
 
 

@@ -17,14 +17,18 @@ GPSTracker::GPSTracker(int gpsScanPeriod) {
     // SerialGSM = new SoftwareSerial(GSM_RX_PIN, GSM_TX_PIN);
     SerialGSM.begin(115200, SERIAL_8N1, GSM_RX_PIN, GSM_TX_PIN);
     SerialGPS.begin(9600, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+
     delay(3000);
     gpsClient = new GPSClient(&SerialGPS);
+    
 }
 
 void GPSTracker::init() {
+    
     oled.init();
     showStatus();
-    
+    rtc.init();  
+    delay(1000);  
     // oled.renderString("GSM Initialized...");
     
     //oled.renderString("GSM Connect..");
@@ -48,12 +52,15 @@ void GPSTracker::init() {
     mqttClient->init(MQTT_SERVER, MQTT_PORT, (Client*) gsmConnect.getClient());
     // mqttClient->keepAlive(MQTT_USER, MQTT_PSSWD);
     
-    sdClient.init();
+    // sdClient.init();
     // Serial.println("Jopa4");
     gpsClient->init(/*GPS_RX_PIN, GPS_TX_PIN*/);
+    
    
     status = 1;
     //gsmConnect.connect(GSM_APN, GSM_GPRS_USER, GSM_GPRS_PASS);
+
+
 }
 
 uint8_t GPSTracker::keepAlive() {
@@ -75,6 +82,7 @@ uint8_t GPSTracker::keepAlive() {
     }
     
     // Serial.println("Jopa10");
+
 }
 
 uint8_t GPSTracker::getStatus() {
@@ -102,8 +110,9 @@ void GPSTracker::readGpsData() {
             || coordCounter < 5
         ) 
         ) {
+            
             if(mqttClient->sendMessage(GPS_TPC, getGpsDataJson(gpsData))) coordSentCounter++;
-            sdClient.writeLogString(gpsData.toString());
+            // sdClient.writeLogString(gpsData.toString());
             prevGpsData = gpsData;
             coordCounter++;
             lastGpsScanTime = millis();
@@ -118,7 +127,8 @@ String GPSTracker::getGpsDataJson(GpsData gpsData) {
     jsonMessageBuilder.addElement("millis", String(millis()));
     jsonMessageBuilder.addElement("lat", String(gpsData.lat, 6));
     jsonMessageBuilder.addElement("lng", String(gpsData.lng, 6));
-
+    jsonMessageBuilder.addElement("datetime", rtc.getDateTime());
+    
     return jsonMessageBuilder.toString();
 }
 
@@ -134,7 +144,7 @@ String GPSTracker::getStatusStr() {
     if (mqttClient->isConnected()) status += "1";
     else 
         status += "0";
-    status += " | Sent: " + String(getSentCounter());
+    status += " | S: " + String(getSentCounter());
     return status;
 }
 
@@ -152,6 +162,8 @@ String GPSTracker::getGpsDataStr() {
 
 void GPSTracker::showStatus() {
     oled.clear();
+    // Serial.print("STATUS = ");
+    // Serial.println(getStatus());
     if (getStatus()) {
         oled.addString(getStatusStr());
         oled.addString(getGpsStatusStr());
